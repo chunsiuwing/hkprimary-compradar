@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>學界通 HKPrimary CompRadar - 進階搜尋與篩選</title>
+    <title>學界通 HKPrimary CompRadar - 全面學界比賽速遞</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -53,7 +53,7 @@
                     </div>
                     <div>
                         <h1 class="font-bold text-lg leading-tight">學界通 CompRadar</h1>
-                        <p class="text-xs text-brand-100 opacity-90">進階多維度搜尋與篩選引擎</p>
+                        <p class="text-xs text-brand-100 opacity-90">實時更新 • 涵蓋 11 大學科與課外活動</p>
                     </div>
                 </div>
                 <button onclick="toggleNotifications()" class="relative bg-brand-700 hover:bg-brand-800 p-2.5 rounded-full transition text-sm">
@@ -66,7 +66,7 @@
             <div class="flex space-x-2">
                 <div class="relative flex-1">
                     <i class="fa-solid fa-search absolute left-3.5 top-3.5 text-slate-400 text-sm"></i>
-                    <input type="text" id="searchInput" oninput="applyFilters()" placeholder="搜尋比賽、主辦機構或自然語言..." class="w-full bg-white text-slate-800 pl-10 pr-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-100 shadow-inner">
+                    <input type="text" id="searchInput" oninput="applyFilters()" placeholder="搜尋未截止之比賽、主辦或關鍵字..." class="w-full bg-white text-slate-800 pl-10 pr-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-100 shadow-inner">
                 </div>
                 <button onclick="openFilterModal()" class="bg-white/10 hover:bg-white/20 text-white px-3.5 rounded-xl flex items-center justify-center transition border border-white/20" title="進階篩選">
                     <i class="fa-solid fa-sliders text-sm"></i>
@@ -80,10 +80,10 @@
             <!-- Active Filter Badges Bar -->
             <div id="activeFilterTags" class="px-4 pt-3 pb-1 flex items-center space-x-2 overflow-x-auto whitespace-nowrap text-xs">
                 <span class="bg-brand-100 text-brand-700 px-3 py-1 rounded-full font-medium flex items-center space-x-1">
-                    <span>全部類別</span>
+                    <span>全部類別 (未截止)</span>
                 </span>
                 <span class="bg-slate-200 text-slate-600 px-3 py-1 rounded-full font-medium">全學段 P.1-P.6</span>
-                <span class="bg-slate-200 text-slate-600 px-3 py-1 rounded-full font-medium">不限費用</span>
+                <span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full font-medium">🟢 只顯示有效報名中</span>
             </div>
 
             <!-- Categories Quick Bar -->
@@ -107,8 +107,8 @@
             <!-- Competition Feed List -->
             <div class="px-4 mt-4">
                 <div class="flex justify-between items-center mb-3">
-                    <h3 id="feedTitle" class="font-bold text-sm text-slate-800">🔍 搜尋與篩選結果</h3>
-                    <span id="resultCount" class="text-xs text-slate-500">共 11 項比賽</span>
+                    <h3 id="feedTitle" class="font-bold text-sm text-slate-800">🟢 所有可報名之學界比賽</h3>
+                    <span id="resultCount" class="text-xs text-slate-500">共 0 項比賽</span>
                 </div>
 
                 <div id="competitionList" class="space-y-3">
@@ -282,187 +282,350 @@
     <script>
         const categoriesList = ['中文科', '英文科', '數學科', 'STEAM項目', '體育', '視藝', '音樂', '常識', '人文', '科學', '其他'];
 
+        // Extended Comprehensive Database across all 11 categories (Dynamic active deadline calculation based on current date)
         const competitionsData = [
+            // 中文科
             {
                 id: 1,
-                title: "全港小學STEM創科挑戰賽 2026",
-                category: "STEAM項目",
-                organizer: "香港中文大學工程學院",
-                deadline: "2026-05-15",
-                daysLeft: 12,
-                grades: ["P.4", "P.5", "P.6"],
-                fee: 0,
-                feeText: "全免",
-                entryType: "團體",
-                aiSummary: "本比賽鼓勵小四至小六學生發揮創意，運用AI及物聯網技術解決社區環保問題。設冠亞季軍及傑出學校大獎，所有參賽者均獲OEA認可證書。",
-                url: "https://www.edb.gov.hk",
-                isUrgent: false,
-                isBookmarked: true
-            },
-            {
-                id: 2,
                 title: "第78屆香港學校朗誦節 (中文組初賽)",
                 category: "中文科",
                 organizer: "香港學校音樂及朗誦協會",
-                deadline: "2026-05-05",
-                daysLeft: 2,
+                deadline: "2026-07-15", // Future valid date
                 grades: ["P.1", "P.2", "P.3", "P.4", "P.5", "P.6"],
                 fee: 180,
                 feeText: "$180 / 項",
                 entryType: "個人",
-                aiSummary: "全港最具規模之學界朗誦盛事。設散文獨誦、詩詞獨誦及二人朗誦。按不同年級組別評分，特設良好及優良獎狀，極具升中portfolio價值。",
+                aiSummary: "全港最具規模之學界朗誦盛事。設散文獨誦、詩詞獨誦及二人朗誦。特設良好及優良獎狀，極具升中portfolio價值。",
                 url: "https://www.hksmsa.org.hk",
-                isUrgent: true,
                 isBookmarked: true
             },
             {
-                id: 3,
-                title: "全港小學奧林匹克數學思維大挑戰",
-                category: "數學科",
-                organizer: "香港數學教育學會",
-                deadline: "2026-05-25",
-                daysLeft: 22,
-                grades: ["P.2", "P.3", "P.4", "P.5", "P.6"],
-                fee: 150,
-                feeText: "$150",
+                id: 2,
+                title: "全港小學中文故事演講及創意寫作比賽",
+                category: "中文科",
+                organizer: "香港中文大學中國語言及文學系",
+                deadline: "2026-08-10",
+                grades: ["P.3", "P.4", "P.5", "P.6"],
+                fee: 0,
+                feeText: "全免",
                 entryType: "個人",
-                aiSummary: "旨在發掘數學潛質優異之小學生。題型涵蓋邏輯推理、圖形空間與應用題。金、銀、銅獎得主可獲邀參加全港數學精英培訓營。",
-                url: "https://www.edb.gov.hk",
-                isUrgent: false,
+                aiSummary: "啟發學生對中文寫作與口語表達之熱愛。參賽者需提交一篇原創故事及三分鐘短片演講。設卓越表現獎及獎學金。",
+                url: "https://www.cuhk.edu.hk",
                 isBookmarked: false
             },
+
+            // 英文科
             {
-                id: 4,
+                id: 3,
                 title: "小學生英語拼字及即興演說大賽 (Spelling Bee)",
                 category: "英文科",
                 organizer: "香港大學教育學院",
-                deadline: "2026-06-02",
-                daysLeft: 30,
+                deadline: "2026-08-01",
                 grades: ["P.3", "P.4", "P.5"],
                 fee: 0,
                 feeText: "全免",
                 entryType: "個人",
                 aiSummary: "訓練小學生英語詞彙拼寫及公眾演說自信。分初賽網上選拔及決賽現場對答。冠亞軍可獲得英文圖書禮券及獎盃。",
                 url: "https://www.hku.hk",
-                isUrgent: false,
                 isBookmarked: false
             },
             {
+                id: 4,
+                title: "全港小學英文短劇創作暨表演邀請賽",
+                category: "英文科",
+                organizer: "香港教育大學英文系",
+                deadline: "2026-07-25",
+                grades: ["P.4", "P.5", "P.6"],
+                fee: 200,
+                feeText: "$200 / 隊",
+                entryType: "團體",
+                aiSummary: "鼓勵學校組隊以英語進行原創短劇表演。著重咬字、舞台肢體語言及團隊協作，設最佳男/女演員及最佳劇本獎。",
+                url: "https://www.eduhk.hk",
+                isBookmarked: false
+            },
+
+            // 數學科
+            {
                 id: 5,
+                title: "全港小學奧林匹克數學思維大挑戰",
+                category: "數學科",
+                organizer: "香港數學教育學會",
+                deadline: "2026-07-20",
+                grades: ["P.2", "P.3", "P.4", "P.5", "P.6"],
+                fee: 150,
+                feeText: "$150",
+                entryType: "個人",
+                aiSummary: "旨在發掘數學潛質優異之小學生。題型涵蓋邏輯推理、圖形空間與應用題。金、銀、銅獎得主可獲邀參加全港培訓營。",
+                url: "https://www.edb.gov.hk",
+                isBookmarked: false
+            },
+            {
+                id: 6,
+                title: "小學趣味奧數解難團體大賽",
+                category: "數學科",
+                organizer: "香港科技大學數學系",
+                deadline: "2026-08-15",
+                grades: ["P.4", "P.5", "P.6"],
+                fee: 0,
+                feeText: "全免",
+                entryType: "團體",
+                aiSummary: "以三人小組形式進行限時搶答及綜合解難挑戰，考驗團隊合作與高階思維能力。設特等獎及精美數學模型獎品。",
+                url: "https://www.ust.hk",
+                isBookmarked: false
+            },
+
+            // STEAM項目
+            {
+                id: 7,
+                title: "全港小學STEM創科挑戰賽 2026",
+                category: "STEAM項目",
+                organizer: "香港中文大學工程學院",
+                deadline: "2026-07-30",
+                grades: ["P.4", "P.5", "P.6"],
+                fee: 0,
+                feeText: "全免",
+                entryType: "團體",
+                aiSummary: "本比賽鼓勵小四至小六學生發揮創意，運用AI及物聯網技術解決社區環保問題。設冠亞季軍及OEA認可證書。",
+                url: "https://www.edb.gov.hk",
+                isBookmarked: true
+            },
+            {
+                id: 8,
+                title: "小小程式編寫家 (Coding) 創意應用大賽",
+                category: "STEAM項目",
+                organizer: "香港電腦學會",
+                deadline: "2026-08-10",
+                grades: ["P.2", "P.3", "P.4", "P.5"],
+                fee: 0,
+                feeText: "全免",
+                entryType: "個人",
+                aiSummary: "利用 Scratch 或 Python 製作互動小遊戲或動畫。評審標準包括程式邏輯、介面設計及創意趣味。",
+                url: "https://www.hkcs.org.hk",
+                isBookmarked: false
+            },
+
+            // 體育
+            {
+                id: 9,
                 title: "全港小學分區田徑錦標賽 2026",
                 category: "體育",
                 organizer: "中國香港學界體育聯會",
-                deadline: "2026-05-10",
-                daysLeft: 7,
+                deadline: "2026-07-12",
                 grades: ["P.4", "P.5", "P.6"],
                 fee: 0,
                 feeText: "學校報名",
                 entryType: "團體",
                 aiSummary: "學體會年度重點體育賽事，設男女子甲、乙、丙組短跑、跳遠、擲壘球等項目。計算學校團體總分及區際代表選拔。",
                 url: "https://www.hkssf.org.hk",
-                isUrgent: true,
                 isBookmarked: false
             },
             {
-                id: 6,
+                id: 10,
+                title: "全港小學九龍區跳繩及體適能挑戰賽",
+                category: "體育",
+                organizer: "香港跳繩總會",
+                deadline: "2026-08-05",
+                grades: ["P.1", "P.2", "P.3", "P.4", "P.5", "P.6"],
+                fee: 100,
+                feeText: "$100",
+                entryType: "個人",
+                aiSummary: "推廣校園體適能與個人跳繩技巧（個人花式、30秒耐力跳）。分初小及高小組別，設獎盃及個人進步獎。",
+                url: "https://www.hkrsa.com",
+                isBookmarked: false
+            },
+
+            // 視藝
+            {
+                id: 11,
                 title: "「我眼中的香港」小學視藝海報設計比賽",
                 category: "視藝",
-                organizer: "康樂及文化事務署",
-                deadline: "2026-06-15",
-                daysLeft: 43,
+                organizer: "康樂及文化事務署 (香港藝術館)",
+                deadline: "2026-08-20",
                 grades: ["P.1", "P.2", "P.3", "P.4", "P.5", "P.6"],
                 fee: 0,
                 feeText: "全免",
                 entryType: "個人",
                 aiSummary: "鼓勵學生透過繪畫與多媒體藝術表達對香港社區的情懷。得獎作品將於香港藝術館大堂及各區圖書館巡迴展出。",
                 url: "https://www.lcsd.gov.hk",
-                isUrgent: false,
                 isBookmarked: false
             },
             {
-                id: 7,
+                id: 12,
+                title: "小學環保廢物再造立體雕塑創作展",
+                category: "視藝",
+                organizer: "香港青年藝術協會",
+                deadline: "2026-07-28",
+                grades: ["P.3", "P.4", "P.5", "P.6"],
+                fee: 0,
+                feeText: "全免",
+                entryType: "團體",
+                aiSummary: "利用日常生活中的回收廢物（紙皮、塑膠瓶）創作具環保教育意義的立體雕塑作品。設最具創意大獎與公開展覽。",
+                url: "https://www.hkyaf.com",
+                isBookmarked: false
+            },
+
+            // 音樂
+            {
+                id: 13,
                 title: "全港小學器樂獨奏 (鋼琴及小提琴) 公開賽",
                 category: "音樂",
                 organizer: "香港青年音樂協會",
-                deadline: "2026-05-20",
-                daysLeft: 17,
+                deadline: "2026-07-18",
                 grades: ["P.1", "P.2", "P.3", "P.4", "P.5", "P.6"],
                 fee: 250,
                 feeText: "$250",
                 entryType: "個人",
                 aiSummary: "提供專業舞台予香港小學音樂學子切磋琴藝。邀請本地知名演奏家擔任評判，並設現場專業評語及公開組別。",
                 url: "https://www.edb.gov.hk",
-                isUrgent: false,
                 isBookmarked: false
             },
             {
-                id: 8,
+                id: 14,
+                title: "全港小學合唱團歌唱觀摩交流音樂會",
+                category: "音樂",
+                organizer: "香港學校音樂及朗誦協會",
+                deadline: "2026-08-12",
+                grades: ["P.1", "P.2", "P.3", "P.4", "P.5", "P.6"],
+                fee: 300,
+                feeText: "$300 / 校",
+                entryType: "團體",
+                aiSummary: "為小學合唱團提供演出與觀摩平台，由資深音樂教育家現場講評，促進各校音樂文化交流與合唱水準。",
+                url: "https://www.hksmsa.org.hk",
+                isBookmarked: false
+            },
+
+            // 常識
+            {
+                id: 15,
                 title: "小學常識科綠色校園專題研習報告",
                 category: "常識",
                 organizer: "環境保護署 & 教育局",
-                deadline: "2026-06-30",
-                daysLeft: 58,
+                deadline: "2026-08-30",
                 grades: ["P.4", "P.5", "P.6"],
                 fee: 0,
                 feeText: "全免",
                 entryType: "團體",
-                aiSummary: "結合常識科課程，探討校園或社區減碳及廚餘回收方案。需提交研習報告及實地考察短片。",
+                aiSummary: "結合常識科課程，探討校園或社區減碳及廚餘回收方案。需提交研習報告及實地考察短片，極具學術參考價值。",
                 url: "https://www.epd.gov.hk",
-                isUrgent: false,
                 isBookmarked: false
             },
             {
-                id: 9,
+                id: 16,
+                title: "香港小學健康生活常識問答網上大賽",
+                category: "常識",
+                organizer: "衛生署中央健康教育組",
+                deadline: "2026-07-22",
+                grades: ["P.1", "P.2", "P.3", "P.4", "P.5", "P.6"],
+                fee: 0,
+                feeText: "全免",
+                entryType: "個人",
+                aiSummary: "推廣個人衛生、均衡飲食及精神健康知識。網上闖關問答形式，全校參與率最高之學校可獲「健康校園大獎」。",
+                url: "https://www.cheu.gov.hk",
+                isBookmarked: false
+            },
+
+            // 人文
+            {
+                id: 17,
                 title: "基本法暨中華歷史文化問答網上挑戰賽",
                 category: "人文",
                 organizer: "教育局課程發展處",
-                deadline: "2026-05-18",
-                daysLeft: 15,
+                deadline: "2026-07-16",
                 grades: ["P.5", "P.6"],
                 fee: 0,
                 feeText: "全免",
                 entryType: "個人",
                 aiSummary: "加深學生對中國歷史朝代、中華文化及基本法的認識。網上作答，設個人最快完成獎及學校最高參與率獎。",
                 url: "https://www.edb.gov.hk",
-                isUrgent: false,
                 isBookmarked: false
             },
             {
-                id: 10,
+                id: 18,
+                title: "香港歷史文物探索考察報告比賽",
+                category: "人文",
+                organizer: "康樂及文化事務署 (古物古蹟辦事處)",
+                deadline: "2026-08-25",
+                grades: ["P.4", "P.5", "P.6"],
+                fee: 0,
+                feeText: "全免",
+                entryType: "團體",
+                aiSummary: "鼓勵學生實地考察香港法定古蹟或歷史建築（如屏山文物徑），撰寫考察報告並製作多媒體簡報分享歷史保育心得。",
+                url: "https://www.lcsd.gov.hk",
+                isBookmarked: false
+            },
+
+            // 科學
+            {
+                id: 19,
                 title: "小小科學家實驗解難擂台賽",
                 category: "科學",
                 organizer: "香港科學館",
-                deadline: "2026-05-28",
-                daysLeft: 25,
+                deadline: "2026-07-26",
                 grades: ["P.3", "P.4"],
                 fee: 0,
                 feeText: "全免",
                 entryType: "團體",
                 aiSummary: "現場公佈科學難題，利用大會提供之簡單材料（如水、氣球、紙杯）即場動手實驗解難，考驗科學原理應用及應變能力。",
                 url: "https://hk.science.museum",
-                isUrgent: false,
                 isBookmarked: false
             },
             {
-                id: 11,
+                id: 20,
+                title: "小學生活科學探究小實驗短片創作比賽",
+                category: "科學",
+                organizer: "香港理工大學應用科學學院",
+                deadline: "2026-08-18",
+                grades: ["P.3", "P.4", "P.5", "P.6"],
+                fee: 0,
+                feeText: "全免",
+                entryType: "個人",
+                aiSummary: "拍攝一段不超過3分鐘的家用科學小實驗短片，並清晰講解背後物理或化學科學原理。設最佳演說獎與最具啟發獎。",
+                url: "https://www.polyu.edu.hk",
+                isBookmarked: false
+            },
+
+            // 其他
+            {
+                id: 21,
                 title: "香港杰出少年領袖培訓暨社區義工服務計劃",
                 category: "其他",
                 organizer: "香港青年協會",
-                deadline: "2026-06-10",
-                daysLeft: 38,
+                deadline: "2026-08-08",
                 grades: ["P.5", "P.6"],
                 fee: 50,
                 feeText: "$50",
                 entryType: "個人",
                 aiSummary: "透過領袖工作坊及策劃社區關愛行動，培育學生的責任感、溝通技巧及公民意識，完成時數可獲義工嘉許狀。",
                 url: "https://www.hkfyg.org.hk",
-                isUrgent: false,
+                isBookmarked: false
+            },
+            {
+                id: 22,
+                title: "全港小學關愛社區義工服務計劃設計書比賽",
+                category: "其他",
+                organizer: "香港公益金 & 教育局",
+                deadline: "2026-08-28",
+                grades: ["P.4", "P.5", "P.6"],
+                fee: 0,
+                feeText: "全免",
+                entryType: "團體",
+                aiSummary: "鼓勵小學生發揮同理心，設計一套可行的校本或社區關懷長者/弱勢社群義工服務計劃書。優勝隊伍可獲基金資助實踐。",
+                url: "https://www.commchest.org",
                 isBookmarked: false
             }
         ];
 
         let selectedCategories = [...categoriesList]; // Default all selected
         let activeQuickCategory = 'ALL';
+
+        // Helper: Calculate days left from today's date (assuming today is May 14, 2026 for simulation, or dynamic real date)
+        function getDaysLeft(deadlineStr) {
+            const today = new Date('2026-05-14T00:00:00'); // simulated reference date in current context
+            const target = new Date(deadlineStr + 'T23:59:59');
+            const diffTime = target - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            return diffDays;
+        }
 
         // Initialize Filter Category Checkboxes in Modal
         function initModalCheckboxes() {
@@ -475,41 +638,50 @@
             `).join('');
         }
 
-        // Render Competitions
+        // Render Competitions (Automatically ensuring only non-expired, available competitions are shown)
         function renderCompetitions(items) {
             const listEl = document.getElementById('competitionList');
-            document.getElementById('resultCount').innerText = `共 ${items.length} 項比賽`;
             
-            if (items.length === 0) {
+            // Filter strictly: deadline must be valid and in the future (daysLeft >= 0)
+            const activeItems = items.filter(comp => getDaysLeft(comp.deadline) >= 0);
+
+            document.getElementById('resultCount').innerText = `共 ${activeItems.length} 項有效比賽`;
+            
+            if (activeItems.length === 0) {
                 listEl.innerHTML = `
                     <div class="text-center py-10 bg-white rounded-2xl border border-slate-200">
-                        <i class="fa-solid fa-magnifying-glass text-3xl text-slate-300 mb-2"></i>
-                        <p class="text-xs text-slate-500">沒有找到符合進階篩選條件的比賽</p>
-                        <button onclick="resetAdvancedFilters()" class="mt-3 text-xs text-brand-600 font-semibold underline">重設所有篩選條件</button>
+                        <i class="fa-solid fa-circle-check text-3xl text-emerald-500 mb-2"></i>
+                        <p class="text-xs text-slate-700 font-semibold mb-1">所有符合條件的比賽均已截止報名</p>
+                        <p class="text-[11px] text-slate-400 mb-3">請嘗試放寬篩選條件或查看其他類別</p>
+                        <button onclick="resetAdvancedFilters()" class="text-xs text-brand-600 font-semibold underline">重設所有篩選條件</button>
                     </div>
                 `;
                 return;
             }
 
-            listEl.innerHTML = items.map(comp => `
-                <div onclick="openModal(${comp.id})" class="bg-white hover:border-brand-600 border border-slate-200 p-4 rounded-2xl shadow-sm transition cursor-pointer relative group">
-                    <div class="flex justify-between items-start mb-1.5">
-                        <div class="flex items-center space-x-2">
-                            <span class="bg-brand-50 text-brand-600 text-[10px] px-2 py-0.5 rounded-full font-bold">${comp.category}</span>
-                            <span class="text-[11px] text-slate-400"><i class="fa-solid fa-building-columns mr-1"></i>${comp.organizer}</span>
+            listEl.innerHTML = activeItems.map(comp => {
+                const daysLeft = getDaysLeft(comp.deadline);
+                const isUrgent = daysLeft <= 7;
+                return `
+                    <div onclick="openModal(${comp.id})" class="bg-white hover:border-brand-600 border border-slate-200 p-4 rounded-2xl shadow-sm transition cursor-pointer relative group">
+                        <div class="flex justify-between items-start mb-1.5">
+                            <div class="flex items-center space-x-2">
+                                <span class="bg-brand-50 text-brand-600 text-[10px] px-2 py-0.5 rounded-full font-bold">${comp.category}</span>
+                                <span class="text-[11px] text-slate-400"><i class="fa-solid fa-building-columns mr-1"></i>${comp.organizer}</span>
+                            </div>
+                            <span class="text-xs ${isUrgent ? 'text-red-600 font-bold bg-red-50 px-2 py-0.5 rounded-full' : 'text-emerald-700 bg-emerald-50 font-semibold'}">
+                                ⏰ 剩餘 ${daysLeft} 天
+                            </span>
                         </div>
-                        <span class="text-xs ${comp.isUrgent ? 'text-red-600 font-bold bg-red-50 px-2 py-0.5 rounded-full' : 'text-slate-500'}">
-                            ⏰ ${comp.daysLeft}天後截
-                        </span>
+                        <h4 class="font-bold text-sm text-slate-800 mb-1.5 group-hover:text-brand-600 transition">${comp.title}</h4>
+                        <div class="flex flex-wrap items-center gap-2 text-[11px] text-slate-600">
+                            <span class="bg-slate-100 px-2 py-0.5 rounded-md"><i class="fa-solid fa-graduation-cap mr-1 text-slate-400"></i>${comp.grades.join(', ')}</span>
+                            <span class="bg-slate-100 px-2 py-0.5 rounded-md"><i class="fa-solid fa-tag mr-1 text-slate-400"></i>${comp.feeText}</span>
+                            <span class="bg-slate-100 px-2 py-0.5 rounded-md"><i class="fa-solid fa-users mr-1 text-slate-400"></i>${comp.entryType}賽</span>
+                        </div>
                     </div>
-                    <h4 class="font-bold text-sm text-slate-800 mb-1.5 group-hover:text-brand-600 transition">${comp.title}</h4>
-                    <div class="flex flex-wrap items-center gap-2 text-[11px] text-slate-600">
-                        <span class="bg-slate-100 px-2 py-0.5 rounded-md"><i class="fa-solid fa-graduation-cap mr-1 text-slate-400"></i>${comp.grades.join(', ')}</span>
-                        <span class="bg-slate-100 px-2 py-0.5 rounded-md"><i class="fa-solid fa-tag mr-1 text-slate-400"></i>${comp.feeText}</span>
-                        <span class="bg-slate-100 px-2 py-0.5 rounded-md"><i class="fa-solid fa-users mr-1 text-slate-400"></i>${comp.entryType}賽</span>
-                    </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         // Quick Category Bar Handler
@@ -545,10 +717,13 @@
             const sortBy = document.getElementById('sortBy').value;
 
             let results = competitionsData.filter(comp => {
+                // Exclude expired competitions immediately
+                if (getDaysLeft(comp.deadline) < 0) return false;
+
                 // Category filter
                 if (!selectedCategories.includes(comp.category)) return false;
 
-                // Search Query filter (Supports title, organizer, category, or natural language keywords)
+                // Search Query filter
                 if (searchQuery) {
                     const matchText = (comp.title + " " + comp.organizer + " " + comp.category + " " + comp.aiSummary).toLowerCase();
                     if (!matchText.includes(searchQuery)) return false;
@@ -557,15 +732,12 @@
                 // Grade filter
                 if (gradeFilter !== 'ALL') {
                     if (gradeFilter === 'Lower') {
-                        // Must include at least one of P1, P2, P3
                         const hasLower = comp.grades.some(g => ['P.1', 'P.2', 'P.3'].includes(g));
                         if (!hasLower) return false;
                     } else if (gradeFilter === 'Upper') {
-                        // Must include at least one of P.4, P.5, P.6
                         const hasUpper = comp.grades.some(g => ['P.4', 'P.5', 'P.6'].includes(g));
                         if (!hasUpper) return false;
                     } else {
-                        // Specific grade e.g., 'P.5'
                         if (!comp.grades.includes(gradeFilter)) return false;
                     }
                 }
@@ -585,28 +757,26 @@
 
             // Sorting
             if (sortBy === 'deadline_asc') {
-                results.sort((a, b) => a.daysLeft - b.daysLeft);
+                results.sort((a, b) => getDaysLeft(a.deadline) - getDaysLeft(b.deadline));
             } else if (sortBy === 'popular') {
-                results.sort((a, b) => b.id - a.id); // Mock popularity
+                results.sort((a, b) => b.id - a.id);
             } else if (sortBy === 'date_desc') {
                 results.sort((a, b) => b.deadline.localeCompare(a.deadline));
             }
 
-            // Update Active Filter Badges Display
-            updateActiveBadgesDisplay(gradeFilter, feeRadio, results.length);
-
+            updateActiveBadgesDisplay(gradeFilter, feeRadio);
             renderCompetitions(results);
         }
 
-        function updateActiveBadgesDisplay(grade, fee, count) {
+        function updateActiveBadgesDisplay(grade, fee) {
             const container = document.getElementById('activeFilterTags');
             let feeLabel = fee === 'FREE' ? '全免 $0' : (fee === 'PAID' ? '付費賽事' : '不限費用');
             let gradeLabel = grade === 'ALL' ? '全學段 P.1-P.6' : (grade === 'Lower' ? '初小 P.1-3' : (grade === 'Upper' ? '高小 P.4-6' : grade));
 
             container.innerHTML = `
                 <span class="bg-brand-100 text-brand-700 px-3 py-1 rounded-full font-medium flex items-center space-x-1 shrink-0">
-                    <i class="fa-solid fa-filter text-[10px] mr-1"></i>
-                    <span>已選 ${selectedCategories.length === categoriesList.length ? '全部類別' : selectedCategories.join(', ')}</span>
+                    <i class="fa-solid fa-check-circle text-[10px] mr-1 text-emerald-600"></i>
+                    <span>${selectedCategories.length === categoriesList.length ? '全部 11 大類別' : selectedCategories.join(', ')}</span>
                 </span>
                 <span class="bg-slate-200 text-slate-700 px-3 py-1 rounded-full font-medium shrink-0">${gradeLabel}</span>
                 <span class="bg-slate-200 text-slate-700 px-3 py-1 rounded-full font-medium shrink-0">${feeLabel}</span>
@@ -623,7 +793,6 @@
         }
 
         function applyAdvancedFilters() {
-            // Collect checked categories from modal
             const checkedCats = [];
             document.querySelectorAll('input[name="modalCat"]:checked').forEach(cb => {
                 checkedCats.push(cb.value);
@@ -655,13 +824,15 @@
             const comp = competitionsData.find(c => c.id === id);
             if (!comp) return;
 
+            const daysLeft = getDaysLeft(comp.deadline);
+
             document.getElementById('modalCategory').innerText = comp.category;
             document.getElementById('modalTitle').innerText = comp.title;
             document.getElementById('modalOrganizer').innerHTML = `<i class="fa-solid fa-building-columns mr-1"></i> 主辦: ${comp.organizer}`;
             document.getElementById('modalAiSummary').innerText = comp.aiSummary;
             document.getElementById('modalGrades').innerText = comp.grades.join(', ');
             document.getElementById('modalFee').innerText = comp.feeText;
-            document.getElementById('modalDeadline').innerText = `${comp.deadline} (剩餘 ${comp.daysLeft} 天)`;
+            document.getElementById('modalDeadline').innerText = `${comp.deadline} (剩餘 ${daysLeft} 天)`;
             document.getElementById('modalEntryType').innerText = comp.entryType + "賽";
             document.getElementById('modalSourceLink').href = comp.url;
 
@@ -686,8 +857,8 @@
             });
 
             if (tab === 'bookmarks') {
-                document.getElementById('feedTitle').innerText = '⭐ 已收藏的比賽';
-                const bookmarked = competitionsData.filter(c => c.isBookmarked);
+                document.getElementById('feedTitle').innerText = '⭐ 已收藏的有效比賽';
+                const bookmarked = competitionsData.filter(c => c.isBookmarked && getDaysLeft(c.deadline) >= 0);
                 renderCompetitions(bookmarked);
             } else if (tab === 'browse') {
                 resetAdvancedFilters();
@@ -699,11 +870,11 @@
                             <p class="text-xs text-slate-500 mb-3">當前身份：香港小學資深教師 / STEAM主任</p>
                             <div class="space-y-2 text-xs">
                                 <label class="flex items-center justify-between p-2 bg-slate-50 rounded-xl">
-                                    <span>每日早上 7:00 推送每日新比賽</span>
+                                    <span>每日早上 7:00 推送有效新比賽</span>
                                     <input type="checkbox" checked class="accent-brand-600">
                                 </label>
                                 <label class="flex items-center justify-between p-2 bg-slate-50 rounded-xl">
-                                    <span>截止前 3 天緊急通知</span>
+                                    <span>自動隱館已過期/截止之比賽</span>
                                     <input type="checkbox" checked class="accent-brand-600">
                                 </label>
                             </div>
@@ -711,9 +882,7 @@
                         <div class="bg-white p-4 rounded-2xl border border-slate-200">
                             <h3 class="font-bold text-sm text-slate-800 mb-2">🔔 關注科目訂閱</h3>
                             <div class="flex flex-wrap gap-2 text-xs">
-                                <span class="bg-brand-50 text-brand-600 px-3 py-1 rounded-lg font-semibold">STEAM項目 ✓</span>
-                                <span class="bg-brand-50 text-brand-600 px-3 py-1 rounded-lg font-semibold">中文科 ✓</span>
-                                <span class="bg-brand-50 text-brand-600 px-3 py-1 rounded-lg font-semibold">數學科 ✓</span>
+                                <span class="bg-brand-50 text-brand-600 px-3 py-1 rounded-lg font-semibold">11大學科全部已啟用 ✓</span>
                             </div>
                         </div>
                     </div>
@@ -724,7 +893,7 @@
         }
 
         function toggleNotifications() {
-            alert('通知中心：您有 2 項關注的比賽將於 3 天內截止報名！');
+            alert('通知中心：當前共有多項有效學界比賽正在接受報名！');
         }
 
         // Initialize App on Load
