@@ -3,57 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>學界通 HKPrimary CompRadar - 進階搜尋與篩選</title>
-    <!-- Tailwind CSS -->
+    <title>學界通 HKPrimary CompRadar - 智能搜尋</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        brand: {
-                            50: '#f0f5ff',
-                            100: '#e0ebff',
-                            600: '#1b365d',
-                            700: '#132847',
-                            800: '#0d1c33'
-                        },
-                        emerald: {
-                            600: '#00a86b'
-                        }
+                        brand: { 50:'#f0f5ff', 100:'#e0ebff', 600:'#1b365d', 700:'#132847', 800:'#0d1c33' },
+                        emerald: { 600:'#00a86b' }
                     }
                 }
             }
         }
     </script>
-    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        mark { background: #fde68a; color: #0f172a; border-radius: 3px; padding: 0 1px; }
+    </style>
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans antialiased flex justify-center items-center min-h-screen p-0 sm:p-4">
 
-    <!-- App Container (Simulating Mobile Phone Screen) -->
     <div class="w-full sm:max-w-md sm:h-[844px] bg-slate-50 sm:rounded-[40px] sm:shadow-2xl flex flex-col overflow-hidden relative border-0 sm:border-8 sm:border-slate-800">
 
         <!-- Status Bar -->
         <div class="bg-brand-600 text-white px-6 pt-3 pb-1 flex justify-between items-center text-xs font-semibold select-none">
             <span>09:41</span>
             <div class="flex space-x-2 items-center">
-                <i class="fa-solid fa-signal"></i>
-                <i class="fa-solid fa-wifi"></i>
-                <i class="fa-solid fa-battery-full"></i>
+                <i class="fa-solid fa-signal"></i><i class="fa-solid fa-wifi"></i><i class="fa-solid fa-battery-full"></i>
             </div>
         </div>
 
-        <!-- App Header -->
-        <header class="bg-brand-600 text-white px-5 pb-4 pt-2 shadow-md">
+        <!-- Header -->
+        <header class="bg-brand-600 text-white px-5 pb-3 pt-2 shadow-md">
             <div class="flex justify-between items-center mb-3">
                 <div class="flex items-center space-x-2">
-                    <div class="bg-white text-brand-600 p-1.5 rounded-xl font-black text-lg shadow">
-                        <i class="fa-solid fa-graduation-cap"></i>
-                    </div>
+                    <div class="bg-white text-brand-600 p-1.5 rounded-xl font-black text-lg shadow"><i class="fa-solid fa-graduation-cap"></i></div>
                     <div>
                         <h1 class="font-bold text-lg leading-tight">學界通 CompRadar</h1>
-                        <p class="text-xs text-brand-100 opacity-90">進階多維度搜尋與篩選引擎</p>
+                        <p class="text-xs text-brand-100 opacity-90" id="dataDate">全港小學比賽智能搜尋</p>
                     </div>
                 </div>
                 <button onclick="toggleNotifications()" class="relative bg-brand-700 hover:bg-brand-800 p-2.5 rounded-full transition text-sm">
@@ -62,32 +52,54 @@
                 </button>
             </div>
 
-            <!-- Search Bar + Advanced Filter Button -->
+            <!-- Search bar -->
             <div class="flex space-x-2">
                 <div class="relative flex-1">
                     <i class="fa-solid fa-search absolute left-3.5 top-3.5 text-slate-400 text-sm"></i>
-                    <input type="text" id="searchInput" oninput="applyFilters()" placeholder="搜尋比賽、主辦機構或自然語言..." class="w-full bg-white text-slate-800 pl-10 pr-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-100 shadow-inner">
+                    <input type="text" id="searchInput" oninput="onSearchInput()" onkeydown="if(event.key==='Enter'){event.preventDefault();commitSearch();}"
+                        placeholder="試試：P.5 免費 STEAM、奧數、朗誦..."
+                        autocomplete="off"
+                        class="w-full bg-white text-slate-800 pl-10 pr-10 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-100 shadow-inner">
+                    <button id="clearBtn" onclick="clearSearch()" class="hidden absolute right-2.5 top-2.5 w-6 h-6 rounded-full bg-slate-200 hover:bg-slate-300 text-slate-600 flex items-center justify-center text-[11px]">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
                 </div>
-                <button onclick="openFilterModal()" class="bg-white/10 hover:bg-white/20 text-white px-3.5 rounded-xl flex items-center justify-center transition border border-white/20" title="進階篩選">
+                <button onclick="openFilterModal()" class="relative bg-white/10 hover:bg-white/20 text-white px-3.5 rounded-xl flex items-center justify-center transition border border-white/20" title="進階篩選">
                     <i class="fa-solid fa-sliders text-sm"></i>
+                    <span id="filterDot" class="hidden absolute -top-1 -right-1 w-2.5 h-2.5 bg-amber-400 rounded-full ring-2 ring-brand-600"></span>
                 </button>
+            </div>
+
+            <!-- Hot searches -->
+            <div class="mt-2.5 flex items-center space-x-1.5 overflow-x-auto no-scrollbar text-[11px]">
+                <span class="text-brand-100/70 shrink-0"><i class="fa-solid fa-fire mr-1 text-amber-300"></i>熱門:</span>
+                <button onclick="runHotSearch('STEAM')" class="hot-chip shrink-0 bg-white/10 hover:bg-white/20 px-2.5 py-1 rounded-full border border-white/20">STEAM</button>
+                <button onclick="runHotSearch('奧數')" class="hot-chip shrink-0 bg-white/10 hover:bg-white/20 px-2.5 py-1 rounded-full border border-white/20">奧數</button>
+                <button onclick="runHotSearch('朗誦')" class="hot-chip shrink-0 bg-white/10 hover:bg-white/20 px-2.5 py-1 rounded-full border border-white/20">朗誦</button>
+                <button onclick="runHotSearch('免費')" class="hot-chip shrink-0 bg-white/10 hover:bg-white/20 px-2.5 py-1 rounded-full border border-white/20">免費</button>
+                <button onclick="runHotSearch('P.5 團體')" class="hot-chip shrink-0 bg-white/10 hover:bg-white/20 px-2.5 py-1 rounded-full border border-white/20">P.5 團體</button>
+                <button onclick="runHotSearch('鋼琴')" class="hot-chip shrink-0 bg-white/10 hover:bg-white/20 px-2.5 py-1 rounded-full border border-white/20">鋼琴</button>
+                <button onclick="runHotSearch('編程')" class="hot-chip shrink-0 bg-white/10 hover:bg-white/20 px-2.5 py-1 rounded-full border border-white/20">編程</button>
             </div>
         </header>
 
-        <!-- Main Scrollable Area -->
+        <!-- Main -->
         <main id="mainContent" class="flex-1 overflow-y-auto pb-20">
-            
-            <!-- Active Filter Badges Bar -->
-            <div id="activeFilterTags" class="px-4 pt-3 pb-1 flex items-center space-x-2 overflow-x-auto whitespace-nowrap text-xs">
-                <span class="bg-brand-100 text-brand-700 px-3 py-1 rounded-full font-medium flex items-center space-x-1">
-                    <span>全部類別</span>
-                </span>
-                <span class="bg-slate-200 text-slate-600 px-3 py-1 rounded-full font-medium">全學段 P.1-P.6</span>
-                <span class="bg-slate-200 text-slate-600 px-3 py-1 rounded-full font-medium">不限費用</span>
+
+            <!-- Recent searches -->
+            <div id="recentWrap" class="px-4 pt-2.5 hidden">
+                <div class="flex items-center justify-between">
+                    <span class="text-[11px] text-slate-500 font-semibold"><i class="fa-solid fa-clock-rotate-left mr-1"></i>最近搜尋</span>
+                    <button onclick="clearRecent()" class="text-[11px] text-slate-400 hover:text-red-500">清除</button>
+                </div>
+                <div id="recentChips" class="flex flex-wrap gap-1.5 mt-1.5"></div>
             </div>
 
-            <!-- Categories Quick Bar -->
-            <div class="px-4 mt-2">
+            <!-- Active filter badges -->
+            <div id="activeFilterTags" class="px-4 pt-3 pb-1 flex items-center space-x-2 overflow-x-auto no-scrollbar whitespace-nowrap text-xs"></div>
+
+            <!-- Category pills -->
+            <div class="px-4 mt-1.5">
                 <div class="flex space-x-2 overflow-x-auto pb-2 pt-1 no-scrollbar">
                     <button onclick="quickCategory('全部')" class="cat-pill bg-brand-600 text-white text-xs px-3 py-1.5 rounded-full font-semibold whitespace-nowrap shadow-sm transition">全部</button>
                     <button onclick="quickCategory('中文科')" class="cat-pill bg-white text-slate-700 hover:bg-blue-50 text-xs px-3 py-1.5 rounded-full font-semibold whitespace-nowrap border border-slate-200 shadow-sm transition">中文科</button>
@@ -104,65 +116,60 @@
                 </div>
             </div>
 
-            <!-- Competition Feed List -->
-            <div class="px-4 mt-4">
-                <div class="flex justify-between items-center mb-3">
-                    <h3 id="feedTitle" class="font-bold text-sm text-slate-800">🔍 搜尋與篩選結果</h3>
-                    <span id="resultCount" class="text-xs text-slate-500">共 11 項比賽</span>
-                </div>
-
-                <div id="competitionList" class="space-y-3">
-                    <!-- Dynamic Competition Cards rendered by JavaScript -->
+            <!-- Search meta -->
+            <div id="searchMeta" class="px-4 mt-2 hidden">
+                <div class="bg-white border border-slate-200 rounded-xl px-3 py-2 text-[11px] text-slate-600 flex items-center justify-between">
+                    <span id="searchMetaText" class="truncate"></span>
+                    <button onclick="clearSearch()" class="text-brand-600 font-semibold shrink-0 ml-2">清除</button>
                 </div>
             </div>
 
+            <!-- Results -->
+            <div class="px-4 mt-3">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 id="feedTitle" class="font-bold text-sm text-slate-800">🟢 所有可報名之學界比賽</h3>
+                    <span id="resultCount" class="text-xs text-slate-500">共 0 項</span>
+                </div>
+                <div id="competitionList" class="space-y-3"></div>
+            </div>
         </main>
 
-        <!-- Bottom Navigation Bar -->
+        <!-- Bottom nav -->
         <nav class="absolute bottom-0 left-0 right-0 bg-white border-t border-slate-200 px-6 py-2.5 flex justify-between items-center text-xs text-slate-500 shadow-lg z-20">
             <button onclick="switchTab('home')" id="nav-home" class="flex flex-col items-center text-brand-600 font-semibold transition">
-                <i class="fa-solid fa-house text-lg mb-0.5"></i>
-                <span>首頁</span>
+                <i class="fa-solid fa-house text-lg mb-0.5"></i><span>首頁</span>
             </button>
             <button onclick="switchTab('browse')" id="nav-browse" class="flex flex-col items-center hover:text-brand-600 transition">
-                <i class="fa-solid fa-compass text-lg mb-0.5"></i>
-                <span>瀏覽</span>
+                <i class="fa-solid fa-compass text-lg mb-0.5"></i><span>瀏覽</span>
             </button>
             <button onclick="switchTab('bookmarks')" id="nav-bookmarks" class="flex flex-col items-center hover:text-brand-600 transition">
-                <i class="fa-solid fa-star text-lg mb-0.5"></i>
-                <span>收藏</span>
+                <i class="fa-solid fa-star text-lg mb-0.5"></i><span>收藏</span>
             </button>
             <button onclick="switchTab('settings')" id="nav-settings" class="flex flex-col items-center hover:text-brand-600 transition">
-                <i class="fa-solid fa-user-gear text-lg mb-0.5"></i>
-                <span>設定</span>
+                <i class="fa-solid fa-user-gear text-lg mb-0.5"></i><span>設定</span>
             </button>
         </nav>
 
-        <!-- ================= ADVANCED FILTER MODAL ================= -->
-        <div id="filterModal" class="absolute inset-0 bg-black/50 z-50 hidden flex flex-col justify-end backdrop-blur-sm transition-opacity">
-            <div class="bg-white rounded-t-3xl max-h-[90%] overflow-y-auto p-6 shadow-2xl animate-in slide-in-from-bottom duration-300">
+        <!-- Advanced filter modal -->
+        <div id="filterModal" class="absolute inset-0 bg-black/50 z-50 hidden flex flex-col justify-end backdrop-blur-sm">
+            <div class="bg-white rounded-t-3xl max-h-[90%] overflow-y-auto p-6 shadow-2xl">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="font-bold text-base text-slate-900 flex items-center space-x-2">
-                        <i class="fa-solid fa-sliders text-brand-600"></i>
-                        <span>進階多維度篩選器</span>
+                        <i class="fa-solid fa-sliders text-brand-600"></i><span>進階多維度篩選器</span>
                     </h3>
                     <button onclick="closeFilterModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 w-8 h-8 rounded-full flex items-center justify-center transition">
                         <i class="fa-solid fa-xmark"></i>
                     </button>
                 </div>
 
-                <!-- Category Filter Checkboxes -->
                 <div class="mb-4">
                     <label class="block font-semibold text-xs text-slate-700 mb-2">比賽學科/類別 (可多選):</label>
-                    <div id="filterCategoryContainer" class="grid grid-cols-3 gap-1.5 text-xs">
-                        <!-- Injected via JS -->
-                    </div>
+                    <div id="filterCategoryContainer" class="grid grid-cols-3 gap-1.5 text-xs"></div>
                 </div>
 
-                <!-- Target Grade Filter -->
                 <div class="mb-4">
                     <label class="block font-semibold text-xs text-slate-700 mb-2">目標學段:</label>
-                    <select id="filterGrade" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-100">
+                    <select id="filterGrade" onchange="applyFilters()" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-100">
                         <option value="ALL">全部學段 (P.1 - P.6)</option>
                         <option value="Lower">初小 (P.1 - P.3)</option>
                         <option value="Upper">高小 (P.4 - P.6)</option>
@@ -175,102 +182,82 @@
                     </select>
                 </div>
 
-                <!-- Fee Filter -->
                 <div class="mb-4">
                     <label class="block font-semibold text-xs text-slate-700 mb-2">報名費用:</label>
                     <div class="grid grid-cols-3 gap-2 text-xs">
                         <label class="flex items-center space-x-1.5 p-2 bg-slate-50 rounded-xl border border-slate-200 cursor-pointer">
-                            <input type="radio" name="feeFilter" value="ALL" checked class="accent-brand-600">
-                            <span>不限</span>
+                            <input type="radio" name="feeFilter" value="ALL" checked onchange="applyFilters()" class="accent-brand-600"><span>不限</span>
                         </label>
                         <label class="flex items-center space-x-1.5 p-2 bg-slate-50 rounded-xl border border-slate-200 cursor-pointer">
-                            <input type="radio" name="feeFilter" value="FREE" class="accent-brand-600">
-                            <span>全免 $0</span>
+                            <input type="radio" name="feeFilter" value="FREE" onchange="applyFilters()" class="accent-brand-600"><span>全免 $0</span>
                         </label>
                         <label class="flex items-center space-x-1.5 p-2 bg-slate-50 rounded-xl border border-slate-200 cursor-pointer">
-                            <input type="radio" name="feeFilter" value="PAID" class="accent-brand-600">
-                            <span>付費賽事</span>
+                            <input type="radio" name="feeFilter" value="PAID" onchange="applyFilters()" class="accent-brand-600"><span>付費賽事</span>
                         </label>
                     </div>
                 </div>
 
-                <!-- Entry Type Filter -->
                 <div class="mb-4">
                     <label class="block font-semibold text-xs text-slate-700 mb-2">參賽形式:</label>
                     <div class="grid grid-cols-2 gap-2 text-xs">
                         <label class="flex items-center space-x-1.5 p-2 bg-slate-50 rounded-xl border border-slate-200 cursor-pointer">
-                            <input type="checkbox" id="entryIndividual" value="個人" checked class="accent-brand-600">
-                            <span>個人賽</span>
+                            <input type="checkbox" id="entryIndividual" checked onchange="applyFilters()" class="accent-brand-600"><span>個人賽</span>
                         </label>
                         <label class="flex items-center space-x-1.5 p-2 bg-slate-50 rounded-xl border border-slate-200 cursor-pointer">
-                            <input type="checkbox" id="entryTeam" value="團體" checked class="accent-brand-600">
-                            <span>學校推薦 / 團體賽</span>
+                            <input type="checkbox" id="entryTeam" checked onchange="applyFilters()" class="accent-brand-600"><span>學校推薦 / 團體賽</span>
                         </label>
                     </div>
                 </div>
 
-                <!-- Sort By -->
                 <div class="mb-6">
                     <label class="block font-semibold text-xs text-slate-700 mb-2">排序方式:</label>
-                    <select id="sortBy" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-100">
+                    <select id="sortBy" onchange="applyFilters()" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-100">
+                        <option value="relevance">🎯 相關度 (搜尋最佳)</option>
                         <option value="deadline_asc">⏰ 截止日期 (最近先)</option>
-                        <option value="popular">🔥 熱門程度 / 瀏覽量</option>
-                        <option value="date_desc">📅 最新發佈日期</option>
+                        <option value="popular">🔥 熱門程度</option>
+                        <option value="fee_asc">💰 費用 (免費先)</option>
                     </select>
                 </div>
 
-                <!-- Action Buttons -->
                 <div class="flex space-x-2">
-                    <button onclick="resetAdvancedFilters()" class="w-1/3 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3 rounded-xl font-semibold text-xs transition">
-                        重設
-                    </button>
-                    <button onclick="applyAdvancedFilters()" class="w-2/3 bg-brand-600 hover:bg-brand-700 text-white py-3 rounded-xl font-semibold text-xs transition shadow">
-                        套用篩選條件
-                    </button>
+                    <button onclick="resetAdvancedFilters()" class="w-1/3 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3 rounded-xl font-semibold text-xs transition">重設</button>
+                    <button onclick="applyAdvancedFilters()" class="w-2/3 bg-brand-600 hover:bg-brand-700 text-white py-3 rounded-xl font-semibold text-xs transition shadow">套用篩選條件</button>
                 </div>
             </div>
         </div>
 
-        <!-- Detail Modal -->
-        <div id="detailModal" class="absolute inset-0 bg-black/50 z-50 hidden flex flex-col justify-end backdrop-blur-sm transition-opacity">
-            <div class="bg-white rounded-t-3xl max-h-[85%] overflow-y-auto p-6 shadow-2xl animate-in slide-in-from-bottom duration-300">
+        <!-- Detail modal -->
+        <div id="detailModal" class="absolute inset-0 bg-black/50 z-50 hidden flex flex-col justify-end backdrop-blur-sm">
+            <div class="bg-white rounded-t-3xl max-h-[85%] overflow-y-auto p-6 shadow-2xl">
                 <div class="flex justify-between items-start mb-3">
                     <span id="modalCategory" class="bg-blue-100 text-blue-700 text-xs px-2.5 py-1 rounded-full font-bold">STEAM項目</span>
                     <button onclick="closeModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 w-8 h-8 rounded-full flex items-center justify-center transition">
                         <i class="fa-solid fa-xmark"></i>
                     </button>
                 </div>
-                <h2 id="modalTitle" class="text-lg font-bold text-slate-900 mb-2">全港小學STEM創科挑戰賽 2026</h2>
-                <p id="modalOrganizer" class="text-xs text-slate-500 mb-4"><i class="fa-solid fa-building-columns mr-1"></i> 主辦: 香港中文大學工程學院</p>
+                <h2 id="modalTitle" class="text-lg font-bold text-slate-900 mb-2"></h2>
+                <p id="modalOrganizer" class="text-xs text-slate-500 mb-4"></p>
 
-                <!-- AI Summary Box -->
                 <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-4 mb-4">
                     <div class="flex items-center space-x-1.5 text-indigo-700 font-bold text-xs mb-1.5">
-                        <i class="fa-solid fa-robot"></i>
-                        <span>AI 重點摘要 (TL;DR)</span>
+                        <i class="fa-solid fa-robot"></i><span>AI 重點摘要 (TL;DR)</span>
                     </div>
-                    <p id="modalAiSummary" class="text-xs text-indigo-900 leading-relaxed">
-                        本比賽鼓勵小四至小六學生發揮創意，運用AI及物聯網技術解決社區環保問題。設冠亞季軍及傑出學校大獎，所有參賽者均獲證書（適用於OEA學生學習概覽）。需以學校名義組隊報名（每校最多3隊）。
-                    </p>
+                    <p id="modalAiSummary" class="text-xs text-indigo-900 leading-relaxed"></p>
                 </div>
 
-                <!-- Key Details -->
                 <div class="space-y-2 text-xs text-slate-700 mb-6 bg-slate-50 p-4 rounded-2xl border border-slate-200">
-                    <div class="flex justify-between"><span class="text-slate-500">參加對象:</span> <span id="modalGrades" class="font-semibold">小四至小六 (P.4 - P.6)</span></div>
-                    <div class="flex justify-between"><span class="text-slate-500">報名費用:</span> <span id="modalFee" class="font-semibold text-emerald-600">全免</span></div>
-                    <div class="flex justify-between"><span class="text-slate-500">截止日期:</span> <span id="modalDeadline" class="font-semibold text-red-600">2026年5月15日 (剩餘 12 天)</span></div>
-                    <div class="flex justify-between"><span class="text-slate-500">比賽形式:</span> <span id="modalEntryType" class="font-semibold">學校推薦 / 團體賽</span></div>
+                    <div class="flex justify-between"><span class="text-slate-500">參加對象:</span> <span id="modalGrades" class="font-semibold"></span></div>
+                    <div class="flex justify-between"><span class="text-slate-500">報名費用:</span> <span id="modalFee" class="font-semibold text-emerald-600"></span></div>
+                    <div class="flex justify-between"><span class="text-slate-500">截止日期:</span> <span id="modalDeadline" class="font-semibold text-red-600"></span></div>
+                    <div class="flex justify-between"><span class="text-slate-500">比賽形式:</span> <span id="modalEntryType" class="font-semibold"></span></div>
                 </div>
 
-                <!-- Action Buttons -->
                 <div class="space-y-2">
                     <a id="modalSourceLink" href="#" target="_blank" class="w-full bg-brand-600 hover:bg-brand-700 text-white py-3 rounded-xl font-semibold text-xs flex items-center justify-center space-x-2 transition shadow">
-                        <i class="fa-solid fa-globe"></i>
-                        <span>瀏覽官方網站與報名</span>
+                        <i class="fa-solid fa-globe"></i><span>瀏覽官方網站與報名</span>
                     </a>
                     <button onclick="alert('已成功加入 Apple / Google / Outlook 日曆！')" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 py-3 rounded-xl font-semibold text-xs flex items-center justify-center space-x-2 transition">
-                        <i class="fa-regular fa-calendar-plus text-brand-600"></i>
-                        <span>一鍵加入個人/學校日曆 (.ics)</span>
+                        <i class="fa-regular fa-calendar-plus text-brand-600"></i><span>一鍵加入個人/學校日曆 (.ics)</span>
                     </button>
                 </div>
             </div>
@@ -278,458 +265,527 @@
 
     </div>
 
-    <!-- JavaScript App Logic -->
     <script>
-        const categoriesList = ['中文科', '英文科', '數學科', 'STEAM項目', '體育', '視藝', '音樂', '常識', '人文', '科學', '其他'];
+    /* ============================================================
+       1. DATA — 30 competitions, all with future deadlines
+       ============================================================ */
+    const categoriesList = ['中文科','英文科','數學科','STEAM項目','體育','視藝','音樂','常識','人文','科學','其他'];
 
-        const competitionsData = [
-            {
-                id: 1,
-                title: "全港小學STEM創科挑戰賽 2026",
-                category: "STEAM項目",
-                organizer: "香港中文大學工程學院",
-                deadline: "2026-05-15",
-                daysLeft: 12,
-                grades: ["P.4", "P.5", "P.6"],
-                fee: 0,
-                feeText: "全免",
-                entryType: "團體",
-                aiSummary: "本比賽鼓勵小四至小六學生發揮創意，運用AI及物聯網技術解決社區環保問題。設冠亞季軍及傑出學校大獎，所有參賽者均獲OEA認可證書。",
-                url: "https://www.edb.gov.hk",
-                isUrgent: false,
-                isBookmarked: true
-            },
-            {
-                id: 2,
-                title: "第78屆香港學校朗誦節 (中文組初賽)",
-                category: "中文科",
-                organizer: "香港學校音樂及朗誦協會",
-                deadline: "2026-05-05",
-                daysLeft: 2,
-                grades: ["P.1", "P.2", "P.3", "P.4", "P.5", "P.6"],
-                fee: 180,
-                feeText: "$180 / 項",
-                entryType: "個人",
-                aiSummary: "全港最具規模之學界朗誦盛事。設散文獨誦、詩詞獨誦及二人朗誦。按不同年級組別評分，特設良好及優良獎狀，極具升中portfolio價值。",
-                url: "https://www.hksmsa.org.hk",
-                isUrgent: true,
-                isBookmarked: true
-            },
-            {
-                id: 3,
-                title: "全港小學奧林匹克數學思維大挑戰",
-                category: "數學科",
-                organizer: "香港數學教育學會",
-                deadline: "2026-05-25",
-                daysLeft: 22,
-                grades: ["P.2", "P.3", "P.4", "P.5", "P.6"],
-                fee: 150,
-                feeText: "$150",
-                entryType: "個人",
-                aiSummary: "旨在發掘數學潛質優異之小學生。題型涵蓋邏輯推理、圖形空間與應用題。金、銀、銅獎得主可獲邀參加全港數學精英培訓營。",
-                url: "https://www.edb.gov.hk",
-                isUrgent: false,
-                isBookmarked: false
-            },
-            {
-                id: 4,
-                title: "小學生英語拼字及即興演說大賽 (Spelling Bee)",
-                category: "英文科",
-                organizer: "香港大學教育學院",
-                deadline: "2026-06-02",
-                daysLeft: 30,
-                grades: ["P.3", "P.4", "P.5"],
-                fee: 0,
-                feeText: "全免",
-                entryType: "個人",
-                aiSummary: "訓練小學生英語詞彙拼寫及公眾演說自信。分初賽網上選拔及決賽現場對答。冠亞軍可獲得英文圖書禮券及獎盃。",
-                url: "https://www.hku.hk",
-                isUrgent: false,
-                isBookmarked: false
-            },
-            {
-                id: 5,
-                title: "全港小學分區田徑錦標賽 2026",
-                category: "體育",
-                organizer: "中國香港學界體育聯會",
-                deadline: "2026-05-10",
-                daysLeft: 7,
-                grades: ["P.4", "P.5", "P.6"],
-                fee: 0,
-                feeText: "學校報名",
-                entryType: "團體",
-                aiSummary: "學體會年度重點體育賽事，設男女子甲、乙、丙組短跑、跳遠、擲壘球等項目。計算學校團體總分及區際代表選拔。",
-                url: "https://www.hkssf.org.hk",
-                isUrgent: true,
-                isBookmarked: false
-            },
-            {
-                id: 6,
-                title: "「我眼中的香港」小學視藝海報設計比賽",
-                category: "視藝",
-                organizer: "康樂及文化事務署",
-                deadline: "2026-06-15",
-                daysLeft: 43,
-                grades: ["P.1", "P.2", "P.3", "P.4", "P.5", "P.6"],
-                fee: 0,
-                feeText: "全免",
-                entryType: "個人",
-                aiSummary: "鼓勵學生透過繪畫與多媒體藝術表達對香港社區的情懷。得獎作品將於香港藝術館大堂及各區圖書館巡迴展出。",
-                url: "https://www.lcsd.gov.hk",
-                isUrgent: false,
-                isBookmarked: false
-            },
-            {
-                id: 7,
-                title: "全港小學器樂獨奏 (鋼琴及小提琴) 公開賽",
-                category: "音樂",
-                organizer: "香港青年音樂協會",
-                deadline: "2026-05-20",
-                daysLeft: 17,
-                grades: ["P.1", "P.2", "P.3", "P.4", "P.5", "P.6"],
-                fee: 250,
-                feeText: "$250",
-                entryType: "個人",
-                aiSummary: "提供專業舞台予香港小學音樂學子切磋琴藝。邀請本地知名演奏家擔任評判，並設現場專業評語及公開組別。",
-                url: "https://www.edb.gov.hk",
-                isUrgent: false,
-                isBookmarked: false
-            },
-            {
-                id: 8,
-                title: "小學常識科綠色校園專題研習報告",
-                category: "常識",
-                organizer: "環境保護署 & 教育局",
-                deadline: "2026-06-30",
-                daysLeft: 58,
-                grades: ["P.4", "P.5", "P.6"],
-                fee: 0,
-                feeText: "全免",
-                entryType: "團體",
-                aiSummary: "結合常識科課程，探討校園或社區減碳及廚餘回收方案。需提交研習報告及實地考察短片。",
-                url: "https://www.epd.gov.hk",
-                isUrgent: false,
-                isBookmarked: false
-            },
-            {
-                id: 9,
-                title: "基本法暨中華歷史文化問答網上挑戰賽",
-                category: "人文",
-                organizer: "教育局課程發展處",
-                deadline: "2026-05-18",
-                daysLeft: 15,
-                grades: ["P.5", "P.6"],
-                fee: 0,
-                feeText: "全免",
-                entryType: "個人",
-                aiSummary: "加深學生對中國歷史朝代、中華文化及基本法的認識。網上作答，設個人最快完成獎及學校最高參與率獎。",
-                url: "https://www.edb.gov.hk",
-                isUrgent: false,
-                isBookmarked: false
-            },
-            {
-                id: 10,
-                title: "小小科學家實驗解難擂台賽",
-                category: "科學",
-                organizer: "香港科學館",
-                deadline: "2026-05-28",
-                daysLeft: 25,
-                grades: ["P.3", "P.4"],
-                fee: 0,
-                feeText: "全免",
-                entryType: "團體",
-                aiSummary: "現場公佈科學難題，利用大會提供之簡單材料（如水、氣球、紙杯）即場動手實驗解難，考驗科學原理應用及應變能力。",
-                url: "https://hk.science.museum",
-                isUrgent: false,
-                isBookmarked: false
-            },
-            {
-                id: 11,
-                title: "香港杰出少年領袖培訓暨社區義工服務計劃",
-                category: "其他",
-                organizer: "香港青年協會",
-                deadline: "2026-06-10",
-                daysLeft: 38,
-                grades: ["P.5", "P.6"],
-                fee: 50,
-                feeText: "$50",
-                entryType: "個人",
-                aiSummary: "透過領袖工作坊及策劃社區關愛行動，培育學生的責任感、溝通技巧及公民意識，完成時數可獲義工嘉許狀。",
-                url: "https://www.hkfyg.org.hk",
-                isUrgent: false,
-                isBookmarked: false
+    const competitionsData = [
+        // 中文科
+        { id:1, title:"第78屆香港學校朗誦節 (中文組初賽)", category:"中文科", organizer:"香港學校音樂及朗誦協會", deadline:"2026-12-05", grades:["P.1","P.2","P.3","P.4","P.5","P.6"], fee:180, feeText:"$180 / 項", entryType:"個人",
+          tags:["朗誦","誦材","普通話","粵語","詩詞","散文","中文"], aiSummary:"全港最具規模之學界朗誦盛事。設散文獨誦、詩詞獨誦及二人朗誦。特設良好及優良獎狀，極具升中portfolio價值。", url:"https://www.hksmsa.org.hk", isBookmarked:true },
+        { id:2, title:"全港小學中文故事演講及創意寫作比賽", category:"中文科", organizer:"香港中文大學中國語言及文學系", deadline:"2027-01-16", grades:["P.3","P.4","P.5","P.6"], fee:0, feeText:"全免", entryType:"個人",
+          tags:["寫作","作文","演講","故事","中文","創作"], aiSummary:"啟發學生對中文寫作與口語表達之熱愛。參賽者需提交一篇原創故事及三分鐘短片演講。設卓越表現獎及獎學金。", url:"https://www.cuhk.edu.hk", isBookmarked:false },
+        { id:3, title:"全港小學普通話詩詞吟誦大賽", category:"中文科", organizer:"香港普通話研習社", deadline:"2026-12-19", grades:["P.1","P.2","P.3","P.4","P.5","P.6"], fee:120, feeText:"$120", entryType:"個人",
+          tags:["普通話","吟誦","詩詞","中文","朗誦"], aiSummary:"以普通話吟誦唐詩宋詞，評審著重發音、節奏、感情表達及儀態。設冠亞季軍及優異獎狀。", url:"https://www.mandarin.org.hk", isBookmarked:false },
+        { id:4, title:"全港小學硬筆及毛筆書法大賽", category:"中文科", organizer:"香港書法家協會", deadline:"2027-02-06", grades:["P.2","P.3","P.4","P.5","P.6"], fee:80, feeText:"$80 / 項", entryType:"個人",
+          tags:["書法","硬筆","毛筆","中文","楷書"], aiSummary:"分硬筆及毛筆兩組，現場書寫指定詩句。評分包括筆法、結構、章法及整體美感，優勝作品將於文化中心展出。", url:"https://www.hkcalligraphy.org.hk", isBookmarked:false },
+
+        // 英文科
+        { id:5, title:"小學生英語拼字及即興演說大賽 (Spelling Bee)", category:"英文科", organizer:"香港大學教育學院", deadline:"2026-12-12", grades:["P.3","P.4","P.5"], fee:0, feeText:"全免", entryType:"個人",
+          tags:["英文","英語","拼字","串字","spelling","演說","english"], aiSummary:"訓練小學生英語詞彙拼寫及公眾演說自信。分初賽網上選拔及決賽現場對答。冠亞軍可獲得英文圖書禮券及獎盃。", url:"https://www.hku.hk", isBookmarked:false },
+        { id:6, title:"全港小學英文短劇創作暨表演邀請賽", category:"英文科", organizer:"香港教育大學英文系", deadline:"2027-01-23", grades:["P.4","P.5","P.6"], fee:200, feeText:"$200 / 隊", entryType:"團體",
+          tags:["英文","英語","drama","戲劇","話劇","表演","團隊"], aiSummary:"鼓勵學校組隊以英語進行原創短劇表演。著重咬字、舞台肢體語言及團隊協作，設最佳男/女演員及最佳劇本獎。", url:"https://www.eduhk.hk", isBookmarked:false },
+        { id:7, title:"全港小學英語閱讀報告比賽 (Reading Challenge)", category:"英文科", organizer:"香港學校圖書館主任協會", deadline:"2027-01-30", grades:["P.2","P.3","P.4","P.5","P.6"], fee:0, feeText:"全免", entryType:"個人",
+          tags:["英文","英語","閱讀","reading","報告","圖書"], aiSummary:"學生自選一本英文圖書，提交一頁閱讀報告及口頭分享短片。設最佳閱讀心得獎及學校積極參與獎。", url:"https://www.hktla.org", isBookmarked:false },
+        { id:8, title:"全港小學英文創意寫作大賽", category:"英文科", organizer:"香港理工大學英文系", deadline:"2027-02-27", grades:["P.4","P.5","P.6"], fee:0, feeText:"全免", entryType:"個人",
+          tags:["英文","英語","寫作","writing","創意","作文"], aiSummary:"以指定圖片為題材撰寫約150字英文故事。評審著重創意、文法、詞彙運用及文章結構。", url:"https://www.polyu.edu.hk", isBookmarked:false },
+
+        // 數學科
+        { id:9, title:"全港小學奧林匹克數學思維大挑戰", category:"數學科", organizer:"香港數學教育學會", deadline:"2026-12-19", grades:["P.2","P.3","P.4","P.5","P.6"], fee:150, feeText:"$150", entryType:"個人",
+          tags:["奧數","數學","邏輯","解難","思維","math"], aiSummary:"旨在發掘數學潛質優異之小學生。題型涵蓋邏輯推理、圖形空間與應用題。金、銀、銅獎得主可獲邀參加全港培訓營。", url:"https://www.hkame.org.hk", isBookmarked:false },
+        { id:10, title:"小學趣味奧數解難團體大賽", category:"數學科", organizer:"香港科技大學數學系", deadline:"2027-02-06", grades:["P.4","P.5","P.6"], fee:0, feeText:"全免", entryType:"團體",
+          tags:["奧數","數學","團體","搶答","解難"], aiSummary:"以三人小組形式進行限時搶答及綜合解難挑戰，考驗團隊合作與高階思維能力。設特等獎及精美數學模型獎品。", url:"https://www.ust.hk", isBookmarked:false },
+        { id:11, title:"全港小學數學建模應用挑戰賽", category:"數學科", organizer:"香港城市大學數學系", deadline:"2027-02-20", grades:["P.5","P.6"], fee:0, feeText:"全免", entryType:"團體",
+          tags:["數學","建模","應用","解難","生活數學"], aiSummary:"以日常生活情境（如校園用水、交通時間）為題，運用數學建模提出解決方案並提交報告。", url:"https://www.cityu.edu.hk", isBookmarked:false },
+
+        // STEAM
+        { id:12, title:"全港小學STEM創科挑戰賽 2026", category:"STEAM項目", organizer:"香港中文大學工程學院", deadline:"2026-12-20", grades:["P.4","P.5","P.6"], fee:0, feeText:"全免", entryType:"團體",
+          tags:["stem","steam","創科","機械人","ai","物聯網","編程","科學"], aiSummary:"本比賽鼓勵小四至小六學生發揮創意，運用AI及物聯網技術解決社區環保問題。設冠亞季軍及OEA認可證書。", url:"https://www.cuhk.edu.hk", isBookmarked:true },
+        { id:13, title:"小小程式編寫家 (Coding) 創意應用大賽", category:"STEAM項目", organizer:"香港電腦學會", deadline:"2027-01-30", grades:["P.2","P.3","P.4","P.5"], fee:0, feeText:"全免", entryType:"個人",
+          tags:["coding","編程","程式","scratch","python","steam","遊戲"], aiSummary:"利用 Scratch 或 Python 製作互動小遊戲或動畫。評審標準包括程式邏輯、介面設計及創意趣味。", url:"https://www.hkcs.org.hk", isBookmarked:false },
+        { id:14, title:"全港小學人工智能 (AI) 創作大賽", category:"STEAM項目", organizer:"香港人工智能學會", deadline:"2026-12-27", grades:["P.3","P.4","P.5","P.6"], fee:0, feeText:"全免", entryType:"個人",
+          tags:["ai","人工智能","編程","steam","機器學習","創科"], aiSummary:"運用圖像識別或生成式AI工具創作解決社區問題的小應用，需提交示範短片及簡短說明。", url:"https://www.hkaai.org", isBookmarked:false },
+        { id:15, title:"全港小學機械人任務挑戰賽", category:"STEAM項目", organizer:"香港科技園公司", deadline:"2027-03-13", grades:["P.4","P.5","P.6"], fee:250, feeText:"$250 / 隊", entryType:"團體",
+          tags:["機械人","robot","編程","steam","創科","工程"], aiSummary:"隊伍需即場編寫程式控制機械人完成場地任務，考驗機械結構、感應器應用及團隊解難能力。", url:"https://www.hkstp.org", isBookmarked:false },
+
+        // 體育
+        { id:16, title:"全港小學分區田徑錦標賽 2026", category:"體育", organizer:"中國香港學界體育聯會", deadline:"2026-12-06", grades:["P.4","P.5","P.6"], fee:0, feeText:"學校報名", entryType:"團體",
+          tags:["田徑","跑步","短跑","跳遠","擲壘球","體育","運動"], aiSummary:"學體會年度重點體育賽事，設男女子甲、乙、丙組短跑、跳遠、擲壘球等項目。計算學校團體總分及區際代表選拔。", url:"https://www.hkssf.org.hk", isBookmarked:false },
+        { id:17, title:"全港小學跳繩及體適能挑戰賽", category:"體育", organizer:"香港跳繩總會", deadline:"2027-01-09", grades:["P.1","P.2","P.3","P.4","P.5","P.6"], fee:100, feeText:"$100", entryType:"個人",
+          tags:["跳繩","體適能","花式跳繩","體育","運動"], aiSummary:"推廣校園體適能與個人跳繩技巧（個人花式、30秒耐力跳）。分初小及高小組別，設獎盃及個人進步獎。", url:"https://www.hkrsa.com", isBookmarked:false },
+        { id:18, title:"全港小學籃球三人賽", category:"體育", organizer:"香港籃球總會", deadline:"2027-01-16", grades:["P.3","P.4","P.5","P.6"], fee:150, feeText:"$150 / 隊", entryType:"團體",
+          tags:["籃球","球類","體育","運動","團隊"], aiSummary:"三人籃球賽制，分男子組及女子組，初賽分區進行、決賽於修頓球場舉行。設最有價值球員獎。", url:"https://www.basketball.org.hk", isBookmarked:false },
+
+        // 視藝
+        { id:19, title:"「我眼中的香港」小學視藝海報設計比賽", category:"視藝", organizer:"康樂及文化事務署 (香港藝術館)", deadline:"2027-02-27", grades:["P.1","P.2","P.3","P.4","P.5","P.6"], fee:0, feeText:"全免", entryType:"個人",
+          tags:["視藝","視覺藝術","繪畫","畫畫","海報","設計","藝術","art"], aiSummary:"鼓勵學生透過繪畫與多媒體藝術表達對香港社區的情懷。得獎作品將於香港藝術館大堂及各區圖書館巡迴展出。", url:"https://www.lcsd.gov.hk", isBookmarked:false },
+        { id:20, title:"小學環保廢物再造立體雕塑創作展", category:"視藝", organizer:"香港青年藝術協會", deadline:"2027-01-16", grades:["P.3","P.4","P.5","P.6"], fee:0, feeText:"全免", entryType:"團體",
+          tags:["雕塑","環保","視藝","立體","藝術","創作"], aiSummary:"利用日常生活中的回收廢物（紙皮、塑膠瓶）創作具環保教育意義的立體雕塑作品。設最具創意大獎與公開展覽。", url:"https://www.hkyaf.com", isBookmarked:false },
+
+        // 音樂
+        { id:21, title:"全港小學器樂獨奏 (鋼琴及小提琴) 公開賽", category:"音樂", organizer:"香港青年音樂協會", deadline:"2026-12-13", grades:["P.1","P.2","P.3","P.4","P.5","P.6"], fee:250, feeText:"$250", entryType:"個人",
+          tags:["音樂","鋼琴","小提琴","器樂","獨奏","music"], aiSummary:"提供專業舞台予香港小學音樂學子切磋琴藝。邀請本地知名演奏家擔任評判，並設現場專業評語及公開組別。", url:"https://www.hkyca.org.hk", isBookmarked:false },
+        { id:22, title:"全港小學合唱團歌唱觀摩交流音樂會", category:"音樂", organizer:"香港學校音樂及朗誦協會", deadline:"2027-02-20", grades:["P.1","P.2","P.3","P.4","P.5","P.6"], fee:300, feeText:"$300 / 校", entryType:"團體",
+          tags:["合唱","合唱團","唱歌","音樂","聲樂"], aiSummary:"為小學合唱團提供演出與觀摩平台，由資深音樂教育家現場講評，促進各校音樂文化交流與合唱水準。", url:"https://www.hksmsa.org.hk", isBookmarked:false },
+
+        // 常識
+        { id:23, title:"小學常識科綠色校園專題研習報告", category:"常識", organizer:"環境保護署 & 教育局", deadline:"2027-03-06", grades:["P.4","P.5","P.6"], fee:0, feeText:"全免", entryType:"團體",
+          tags:["常識","環保","綠色","專題研習","減碳","廚餘"], aiSummary:"結合常識科課程，探討校園或社區減碳及廚餘回收方案。需提交研習報告及實地考察短片，極具學術參考價值。", url:"https://www.epd.gov.hk", isBookmarked:false },
+        { id:24, title:"香港小學健康生活常識問答網上大賽", category:"常識", organizer:"衛生署中央健康教育組", deadline:"2026-12-12", grades:["P.1","P.2","P.3","P.4","P.5","P.6"], fee:0, feeText:"全免", entryType:"個人",
+          tags:["常識","健康","問答","網上","衛生","飲食"], aiSummary:"推廣個人衛生、均衡飲食及精神健康知識。網上闖關問答形式，全校參與率最高之學校可獲「健康校園大獎」。", url:"https://www.cheu.gov.hk", isBookmarked:false },
+
+        // 人文
+        { id:25, title:"基本法暨中華歷史文化問答網上挑戰賽", category:"人文", organizer:"教育局課程發展處", deadline:"2026-12-05", grades:["P.5","P.6"], fee:0, feeText:"全免", entryType:"個人",
+          tags:["基本法","歷史","中華文化","人文","問答","國情"], aiSummary:"加深學生對中國歷史朝代、中華文化及基本法的認識。網上作答，設個人最快完成獎及學校最高參與率獎。", url:"https://www.edb.gov.hk", isBookmarked:false },
+        { id:26, title:"香港歷史文物探索考察報告比賽", category:"人文", organizer:"古物古蹟辦事處", deadline:"2027-02-13", grades:["P.4","P.5","P.6"], fee:0, feeText:"全免", entryType:"團體",
+          tags:["歷史","文物","古蹟","考察","人文","保育"], aiSummary:"鼓勵學生實地考察香港法定古蹟或歷史建築（如屏山文物徑），撰寫考察報告並製作多媒體簡報分享歷史保育心得。", url:"https://www.amo.gov.hk", isBookmarked:false },
+
+        // 科學
+        { id:27, title:"小小科學家實驗解難擂台賽", category:"科學", organizer:"香港科學館", deadline:"2027-01-09", grades:["P.3","P.4"], fee:0, feeText:"全免", entryType:"團體",
+          tags:["科學","實驗","解難","科學館","動手做"], aiSummary:"現場公佈科學難題，利用大會提供之簡單材料（如水、氣球、紙杯）即場動手實驗解難，考驗科學原理應用及應變能力。", url:"https://hk.science.museum", isBookmarked:false },
+        { id:28, title:"小學生活科學探究小實驗短片創作比賽", category:"科學", organizer:"香港理工大學應用科學學院", deadline:"2027-02-27", grades:["P.3","P.4","P.5","P.6"], fee:0, feeText:"全免", entryType:"個人",
+          tags:["科學","實驗","短片","拍攝","物理","化學","科學探究"], aiSummary:"拍攝一段不超過3分鐘的家用科學小實驗短片，並清晰講解背後物理或化學科學原理。設最佳演說獎與最具啟發獎。", url:"https://www.polyu.edu.hk", isBookmarked:false },
+
+        // 其他
+        { id:29, title:"香港杰出少年領袖培訓暨社區義工服務計劃", category:"其他", organizer:"香港青年協會", deadline:"2027-01-23", grades:["P.5","P.6"], fee:50, feeText:"$50", entryType:"個人",
+          tags:["領袖","義工","服務","社區","其他","領袖訓練"], aiSummary:"透過領袖工作坊及策劃社區關愛行動，培育學生的責任感、溝通技巧及公民意識，完成時數可獲義工嘉許狀。", url:"https://www.hkfyg.org.hk", isBookmarked:false },
+        { id:30, title:"全港小學關愛社區義工服務計劃設計書比賽", category:"其他", organizer:"香港公益金 & 教育局", deadline:"2027-02-27", grades:["P.4","P.5","P.6"], fee:0, feeText:"全免", entryType:"團體",
+          tags:["義工","社區","關愛","其他","服務","公益"], aiSummary:"鼓勵小學生發揮同理心，設計一套可行的校本或社區關懷長者/弱勢社群義工服務計劃書。優勝隊伍可獲基金資助實踐。", url:"https://www.commchest.org", isBookmarked:false }
+    ];
+
+    /* ============================================================
+       2. SEARCH ENGINE — synonyms, multi-keyword AND, scoring
+       ============================================================ */
+    const CATEGORY_KEYWORDS = {
+        '中文科': '中文 語文 寫作 作文 朗誦 書法 普通話 閱讀 文學 演講 chinese',
+        '英文科': '英文 英語 english spelling drama reading writing 話劇 串字',
+        '數學科': '數學 奧數 數學思維 math mathematics 邏輯 解難 建模 應用題',
+        'STEAM項目': 'steam stem 創科 科創 編程 coding 程式 機械人 robot ai 人工智能 3d打印 工程',
+        '體育': '體育 運動 田徑 跑步 跳繩 籃球 足球 游泳 羽毛球 乒乓球 sport',
+        '視藝': '視藝 視覺藝術 繪畫 畫畫 藝術 設計 海報 雕塑 手工 art',
+        '音樂': '音樂 鋼琴 小提琴 合唱 唱歌 器樂 獨奏 聲樂 music',
+        '常識': '常識 健康 環保 綠色 生活 社會 衛生 專題研習',
+        '人文': '人文 歷史 文化 基本法 國情 公民 地理 古蹟 文物 保育',
+        '科學': '科學 實驗 科學探究 物理 化學 生物 science 動手做',
+        '其他': '其他 領袖 義工 服務 社區 公益 關愛'
+    };
+
+    const GRADE_ALIASES = {
+        '小一':'p.1','小二':'p.2','小三':'p.3','小四':'p.4','小五':'p.5','小六':'p.6',
+        'p1':'p.1','p2':'p.2','p3':'p.3','p4':'p.4','p5':'p.5','p6':'p.6',
+        '初小':'p.1 p.2 p.3','高小':'p.4 p.5 p.6','小學':'p.1 p.2 p.3 p.4 p.5 p.6'
+    };
+
+    const FREE_WORDS = ['免費','全免','免費參加','free','$0','零費用'];
+    const PAID_WORDS = ['付費','收費','需繳費','paid'];
+    const TEAM_WORDS = ['團體','隊制','隊伍','小組','學校推薦','team'];
+    const INDIV_WORDS = ['個人','個人賽','單人','individual'];
+
+    const HOT_SEARCHES = ['STEAM','奧數','朗誦','免費','P.5 團體','鋼琴','編程','畫畫','英文','義工'];
+
+    // Precompute normalized haystack for every competition
+    competitionsData.forEach(c => {
+        c.titleLower = c.title.toLowerCase();
+        c.tagsLower = c.tags.join(' ').toLowerCase();
+        c.haystack = [
+            c.title, c.category, c.organizer, c.tags.join(' '), c.aiSummary,
+            c.grades.join(' '), c.feeText, c.entryType + '賽',
+            c.deadline, `${c.deadline.slice(0,4)}年${Number(c.deadline.slice(5,7))}月`,
+            `${Number(c.deadline.slice(5,7))}月`,
+            c.fee === 0 ? '免費 全免 free $0' : '付費 收費',
+            CATEGORY_KEYWORDS[c.category] || ''
+        ].join(' ').toLowerCase();
+    });
+
+    function normalize(str) { return String(str).toLowerCase().replace(/\s+/g, ' ').trim(); }
+
+    // Expand one query token into equivalent search variants
+    function expandToken(token) {
+        const t = normalize(token);
+        const out = new Set([t]);
+        if (!t) return [];
+        if (GRADE_ALIASES[t]) GRADE_ALIASES[t].split(' ').forEach(v => out.add(v));
+        if (FREE_WORDS.includes(t)) out.add('免費'), out.add('全免');
+        if (PAID_WORDS.includes(t)) out.add('付費');
+        if (TEAM_WORDS.includes(t)) out.add('團體');
+        if (INDIV_WORDS.includes(t)) out.add('個人');
+        // Category synonym expansion
+        if (t.length >= 2) {
+            Object.keys(CATEGORY_KEYWORDS).forEach(cat => {
+                const words = (cat + ' ' + CATEGORY_KEYWORDS[cat]).toLowerCase();
+                if (words.includes(t)) out.add(cat);
+            });
+        }
+        return [...out].filter(Boolean);
+    }
+
+    // Score a competition against a full query. 0 = no match (AND semantics)
+    function scoreCompetition(comp, query) {
+        const tokens = normalize(query).split(' ').filter(Boolean);
+        if (!tokens.length) return 1;
+        let total = 0;
+        for (const tok of tokens) {
+            const variants = expandToken(tok);
+            let tokenScore = 0;
+            for (const v of variants) {
+                if (!comp.haystack.includes(v)) continue;
+                tokenScore += 3;
+                if (comp.titleLower.includes(v)) tokenScore += 6;
+                if (comp.tagsLower.includes(v)) tokenScore += 3;
+                if (comp.category.toLowerCase().includes(v)) tokenScore += 4;
             }
-        ];
+            if (tokenScore === 0) return 0; // every token must match somewhere
+            total += tokenScore;
+        }
+        if (comp.haystack.includes(normalize(query))) total += 8; // phrase bonus
+        return total;
+    }
 
-        let selectedCategories = [...categoriesList]; // Default all selected
-        let activeQuickCategory = 'ALL';
+    function highlightText(text, tokens) {
+        let html = String(text).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        const variants = new Set();
+        tokens.forEach(t => expandToken(t).forEach(v => { if (v.length >= 2) variants.add(v); }));
+        [...variants].sort((a,b) => b.length - a.length).forEach(v => {
+            const escaped = v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            html = html.replace(new RegExp(escaped, 'gi'), m => `<mark>${m}</mark>`);
+        });
+        return html;
+    }
 
-        // Initialize Filter Category Checkboxes in Modal
-        function initModalCheckboxes() {
-            const container = document.getElementById('filterCategoryContainer');
-            container.innerHTML = categoriesList.map(cat => `
-                <label class="flex items-center space-x-1.5 p-2 bg-slate-50 rounded-xl border border-slate-200 cursor-pointer">
-                    <input type="checkbox" name="modalCat" value="${cat}" checked class="accent-brand-600">
-                    <span class="truncate">${cat}</span>
-                </label>
-            `).join('');
+    /* ============================================================
+       3. STATE
+       ============================================================ */
+    let selectedCategories = [...categoriesList];
+    let activeQuery = '';
+    let searchTimer = null;
+    let recentSearches = [];
+    try { recentSearches = JSON.parse(localStorage.getItem('compradar_recent') || '[]'); } catch (e) { recentSearches = []; }
+
+    const REF_TODAY = new Date();
+    REF_TODAY.setHours(0, 0, 0, 0);
+
+    function getDaysLeft(deadlineStr) {
+        const target = new Date(deadlineStr + 'T23:59:59');
+        return Math.ceil((target - REF_TODAY) / 86400000);
+    }
+
+    function fmtDate(d) {
+        return new Date(d + 'T00:00:00').toLocaleDateString('zh-HK', { year:'numeric', month:'long', day:'numeric' });
+    }
+
+    /* ============================================================
+       4. UI HELPERS
+       ============================================================ */
+    function initModalCheckboxes() {
+        document.getElementById('filterCategoryContainer').innerHTML = categoriesList.map(cat => `
+            <label class="flex items-center space-x-1.5 p-2 bg-slate-50 rounded-xl border border-slate-200 cursor-pointer">
+                <input type="checkbox" name="modalCat" value="${cat}" checked onchange="applyFilters()" class="accent-brand-600">
+                <span class="truncate">${cat}</span>
+            </label>`).join('');
+    }
+
+    function renderRecent() {
+        const wrap = document.getElementById('recentWrap');
+        const chips = document.getElementById('recentChips');
+        if (!recentSearches.length) { wrap.classList.add('hidden'); return; }
+        wrap.classList.remove('hidden');
+        chips.innerHTML = recentSearches.map(q => `
+            <button onclick="runHotSearch('${q.replace(/'/g, "\\'")}')" class="bg-white border border-slate-200 hover:border-brand-600 text-slate-600 px-2.5 py-1 rounded-full text-[11px]">
+                <i class="fa-solid fa-clock-rotate-left mr-1 text-slate-300"></i>${q}
+            </button>`).join('');
+    }
+
+    function pushRecent(q) {
+        q = normalize(q);
+        if (!q) return;
+        recentSearches = [q, ...recentSearches.filter(x => x !== q)].slice(0, 6);
+        try { localStorage.setItem('compradar_recent', JSON.stringify(recentSearches)); } catch (e) {}
+        renderRecent();
+    }
+
+    function clearRecent() {
+        recentSearches = [];
+        try { localStorage.removeItem('compradar_recent'); } catch (e) {}
+        renderRecent();
+    }
+
+    function updateClearButton() {
+        const v = document.getElementById('searchInput').value;
+        document.getElementById('clearBtn').classList.toggle('hidden', !v);
+    }
+
+    /* ============================================================
+       5. SEARCH ACTIONS
+       ============================================================ */
+    function onSearchInput() {
+        updateClearButton();
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => {
+            activeQuery = document.getElementById('searchInput').value;
+            applyFilters();
+        }, 120);
+    }
+
+    function commitSearch() {
+        activeQuery = document.getElementById('searchInput').value;
+        pushRecent(activeQuery);
+        applyFilters();
+    }
+
+    function runHotSearch(q) {
+        const input = document.getElementById('searchInput');
+        input.value = q;
+        activeQuery = q;
+        pushRecent(q);
+        updateClearButton();
+        applyFilters();
+        document.getElementById('mainContent').scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function clearSearch() {
+        document.getElementById('searchInput').value = '';
+        activeQuery = '';
+        updateClearButton();
+        applyFilters();
+    }
+
+    /* ============================================================
+       6. MAIN FILTER / RENDER
+       ============================================================ */
+    function applyFilters() {
+        const query = normalize(activeQuery);
+        const tokens = query.split(' ').filter(Boolean);
+        const gradeFilter = document.getElementById('filterGrade').value;
+        const feeRadio = document.querySelector('input[name="feeFilter"]:checked').value;
+        const entryIndividual = document.getElementById('entryIndividual').checked;
+        const entryTeam = document.getElementById('entryTeam').checked;
+        const sortBy = document.getElementById('sortBy').value;
+
+        let results = competitionsData.filter(comp => {
+            if (getDaysLeft(comp.deadline) < 0) return false;                        // never show expired
+            if (!selectedCategories.includes(comp.category)) return false;
+            if (gradeFilter !== 'ALL') {
+                if (gradeFilter === 'Lower') { if (!comp.grades.some(g => ['P.1','P.2','P.3'].includes(g))) return false; }
+                else if (gradeFilter === 'Upper') { if (!comp.grades.some(g => ['P.4','P.5','P.6'].includes(g))) return false; }
+                else if (!comp.grades.includes(gradeFilter)) return false;
+            }
+            if (feeRadio === 'FREE' && comp.fee > 0) return false;
+            if (feeRadio === 'PAID' && comp.fee === 0) return false;
+            const isInd = comp.entryType.includes('個人');
+            const isTm = comp.entryType.includes('團體');
+            if (isInd && !entryIndividual && !isTm) return false;
+            if (isTm && !entryTeam && !isInd) return false;
+
+            if (query) {
+                const score = scoreCompetition(comp, query);
+                if (score === 0) return false;
+                comp._score = score;
+            }
+            return true;
+        });
+
+        if (sortBy === 'relevance' && query) results.sort((a,b) => (b._score||0) - (a._score||0));
+        else if (sortBy === 'deadline_asc' || (!query && sortBy === 'relevance')) results.sort((a,b) => getDaysLeft(a.deadline) - getDaysLeft(b.deadline));
+        else if (sortBy === 'popular') results.sort((a,b) => (b.id % 7) - (a.id % 7));
+        else if (sortBy === 'fee_asc') results.sort((a,b) => a.fee - b.fee);
+
+        updateMeta(tokens, results.length);
+        updateFilterDot();
+        renderCompetitions(results, tokens);
+    }
+
+    function updateMeta(tokens, count) {
+        const meta = document.getElementById('searchMeta');
+        const metaText = document.getElementById('searchMetaText');
+        const activeFilters = selectedCategories.length !== categoriesList.length;
+
+        if (tokens.length) {
+            meta.classList.remove('hidden');
+            const chips = tokens.map(t => `<span class="bg-brand-50 text-brand-700 px-1.5 py-0.5 rounded font-semibold">${t}</span>`).join(' ');
+            metaText.innerHTML = `搜尋 ${chips} → 找到 <b>${count}</b> 項`;
+        } else if (activeFilters) {
+            meta.classList.remove('hidden');
+            metaText.innerHTML = `已篩選 <b>${selectedCategories.length}</b> 個類別 → 找到 <b>${count}</b> 項`;
+        } else {
+            meta.classList.add('hidden');
+        }
+    }
+
+    function updateFilterDot() {
+        const isFiltered = selectedCategories.length !== categoriesList.length
+            || document.getElementById('filterGrade').value !== 'ALL'
+            || document.querySelector('input[name="feeFilter"]:checked').value !== 'ALL'
+            || !document.getElementById('entryIndividual').checked
+            || !document.getElementById('entryTeam').checked;
+        document.getElementById('filterDot').classList.toggle('hidden', !isFiltered);
+    }
+
+    function renderCompetitions(items, tokens = []) {
+        const listEl = document.getElementById('competitionList');
+        document.getElementById('resultCount').innerText = `共 ${items.length} 項`;
+        document.getElementById('feedTitle').innerHTML = tokens.length
+            ? `🔍 「${tokens.join(' ')}」搜尋結果`
+            : (selectedCategories.length === categoriesList.length ? '🟢 所有可報名之學界比賽' : `📂 ${selectedCategories.join('、')}`);
+
+        if (!items.length) {
+            listEl.innerHTML = `
+                <div class="text-center py-10 bg-white rounded-2xl border border-slate-200">
+                    <i class="fa-solid fa-magnifying-glass text-3xl text-slate-300 mb-2"></i>
+                    <p class="text-xs text-slate-700 font-semibold mb-1">找不到符合的比賽</p>
+                    <p class="text-[11px] text-slate-400 mb-3">試試其他關鍵字，例如：免費、P.5、STEAM、奧數</p>
+                    <div class="flex flex-wrap justify-center gap-1.5 px-6">
+                        ${HOT_SEARCHES.slice(0,5).map(q => `<button onclick="runHotSearch('${q}')" class="bg-slate-100 hover:bg-brand-50 text-slate-600 text-[11px] px-2.5 py-1 rounded-full">${q}</button>`).join('')}
+                    </div>
+                </div>`;
+            return;
         }
 
-        // Render Competitions
-        function renderCompetitions(items) {
-            const listEl = document.getElementById('competitionList');
-            document.getElementById('resultCount').innerText = `共 ${items.length} 項比賽`;
-            
-            if (items.length === 0) {
-                listEl.innerHTML = `
-                    <div class="text-center py-10 bg-white rounded-2xl border border-slate-200">
-                        <i class="fa-solid fa-magnifying-glass text-3xl text-slate-300 mb-2"></i>
-                        <p class="text-xs text-slate-500">沒有找到符合進階篩選條件的比賽</p>
-                        <button onclick="resetAdvancedFilters()" class="mt-3 text-xs text-brand-600 font-semibold underline">重設所有篩選條件</button>
+        listEl.innerHTML = items.map(comp => {
+            const daysLeft = getDaysLeft(comp.deadline);
+            const urgent = daysLeft <= 7;
+            return `
+            <div onclick="openModal(${comp.id})" class="bg-white hover:border-brand-600 border border-slate-200 p-4 rounded-2xl shadow-sm transition cursor-pointer group">
+                <div class="flex justify-between items-start mb-1.5">
+                    <div class="flex items-center space-x-2 min-w-0">
+                        <span class="bg-brand-50 text-brand-600 text-[10px] px-2 py-0.5 rounded-full font-bold shrink-0">${comp.category}</span>
+                        <span class="text-[11px] text-slate-400 truncate"><i class="fa-solid fa-building-columns mr-1"></i>${comp.organizer}</span>
                     </div>
-                `;
-                return;
-            }
-
-            listEl.innerHTML = items.map(comp => `
-                <div onclick="openModal(${comp.id})" class="bg-white hover:border-brand-600 border border-slate-200 p-4 rounded-2xl shadow-sm transition cursor-pointer relative group">
-                    <div class="flex justify-between items-start mb-1.5">
-                        <div class="flex items-center space-x-2">
-                            <span class="bg-brand-50 text-brand-600 text-[10px] px-2 py-0.5 rounded-full font-bold">${comp.category}</span>
-                            <span class="text-[11px] text-slate-400"><i class="fa-solid fa-building-columns mr-1"></i>${comp.organizer}</span>
-                        </div>
-                        <span class="text-xs ${comp.isUrgent ? 'text-red-600 font-bold bg-red-50 px-2 py-0.5 rounded-full' : 'text-slate-500'}">
-                            ⏰ ${comp.daysLeft}天後截
-                        </span>
-                    </div>
-                    <h4 class="font-bold text-sm text-slate-800 mb-1.5 group-hover:text-brand-600 transition">${comp.title}</h4>
-                    <div class="flex flex-wrap items-center gap-2 text-[11px] text-slate-600">
-                        <span class="bg-slate-100 px-2 py-0.5 rounded-md"><i class="fa-solid fa-graduation-cap mr-1 text-slate-400"></i>${comp.grades.join(', ')}</span>
-                        <span class="bg-slate-100 px-2 py-0.5 rounded-md"><i class="fa-solid fa-tag mr-1 text-slate-400"></i>${comp.feeText}</span>
-                        <span class="bg-slate-100 px-2 py-0.5 rounded-md"><i class="fa-solid fa-users mr-1 text-slate-400"></i>${comp.entryType}賽</span>
-                    </div>
+                    <span class="text-xs shrink-0 ml-2 ${urgent ? 'text-red-600 font-bold bg-red-50 px-2 py-0.5 rounded-full' : 'text-emerald-700 bg-emerald-50 font-semibold px-2 py-0.5 rounded-full'}">
+                        ⏰ ${daysLeft} 天
+                    </span>
                 </div>
-            `).join('');
-        }
+                <h4 class="font-bold text-sm text-slate-800 mb-1.5 group-hover:text-brand-600 transition">${highlightText(comp.title, tokens)}</h4>
+                <div class="flex flex-wrap items-center gap-2 text-[11px] text-slate-600">
+                    <span class="bg-slate-100 px-2 py-0.5 rounded-md"><i class="fa-solid fa-graduation-cap mr-1 text-slate-400"></i>${comp.grades.join(', ')}</span>
+                    <span class="bg-slate-100 px-2 py-0.5 rounded-md"><i class="fa-solid fa-tag mr-1 text-slate-400"></i>${comp.feeText}</span>
+                    <span class="bg-slate-100 px-2 py-0.5 rounded-md"><i class="fa-solid fa-users mr-1 text-slate-400"></i>${comp.entryType}賽</span>
+                </div>
+            </div>`;
+        }).join('');
+    }
 
-        // Quick Category Bar Handler
-        function quickCategory(cat) {
-            activeQuickCategory = cat;
-            
-            // Update UI pills
-            document.querySelectorAll('.cat-pill').forEach(btn => {
-                if (btn.innerText.includes(cat) || (cat === '全部' && btn.innerText === '全部')) {
-                    btn.classList.add('bg-brand-600', 'text-white');
-                    btn.classList.remove('bg-white', 'text-slate-700', 'border');
-                } else {
-                    btn.classList.remove('bg-brand-600', 'text-white');
-                    btn.classList.add('bg-white', 'text-slate-700', 'border', 'border-slate-200');
-                }
-            });
+    /* ============================================================
+       7. CATEGORY / FILTER ACTIONS
+       ============================================================ */
+    function quickCategory(cat) {
+        document.querySelectorAll('.cat-pill').forEach(btn => {
+            const isActive = (cat === '全部' && btn.innerText.trim() === '全部') || (cat !== '全部' && btn.innerText.trim() === cat.replace('項目',''));
+            btn.classList.toggle('bg-brand-600', isActive);
+            btn.classList.toggle('text-white', isActive);
+            btn.classList.toggle('bg-white', !isActive);
+            btn.classList.toggle('text-slate-700', !isActive);
+            btn.classList.toggle('border', !isActive);
+            btn.classList.toggle('border-slate-200', !isActive);
+        });
+        selectedCategories = cat === '全部' ? [...categoriesList] : [cat];
+        document.querySelectorAll('input[name="modalCat"]').forEach(cb => cb.checked = selectedCategories.includes(cb.value));
+        applyFilters();
+    }
 
-            if (cat === '全部') {
-                selectedCategories = [...categoriesList];
-            } else {
-                selectedCategories = [cat];
-            }
-            applyFilters();
-        }
+    function openFilterModal() { document.getElementById('filterModal').classList.remove('hidden'); }
+    function closeFilterModal() { document.getElementById('filterModal').classList.add('hidden'); }
 
-        // Main Filter & Search Engine
-        function applyFilters() {
-            const searchQuery = document.getElementById('searchInput').value.toLowerCase().trim();
-            const gradeFilter = document.getElementById('filterGrade').value;
-            const feeRadio = document.querySelector('input[name="feeFilter"]:checked').value;
-            const entryIndividual = document.getElementById('entryIndividual').checked;
-            const entryTeam = document.getElementById('entryTeam').checked;
-            const sortBy = document.getElementById('sortBy').value;
+    function applyAdvancedFilters() {
+        const checked = [...document.querySelectorAll('input[name="modalCat"]:checked')].map(cb => cb.value);
+        if (checked.length) selectedCategories = checked;
+        closeFilterModal();
+        applyFilters();
+    }
 
-            let results = competitionsData.filter(comp => {
-                // Category filter
-                if (!selectedCategories.includes(comp.category)) return false;
+    function resetAdvancedFilters() {
+        document.getElementById('searchInput').value = '';
+        activeQuery = '';
+        document.getElementById('filterGrade').value = 'ALL';
+        document.querySelector('input[name="feeFilter"][value="ALL"]').checked = true;
+        document.getElementById('entryIndividual').checked = true;
+        document.getElementById('entryTeam').checked = true;
+        document.getElementById('sortBy').value = 'relevance';
+        selectedCategories = [...categoriesList];
+        document.querySelectorAll('input[name="modalCat"]').forEach(cb => cb.checked = true);
+        updateClearButton();
+        closeFilterModal();
+        quickCategory('全部');
+    }
 
-                // Search Query filter (Supports title, organizer, category, or natural language keywords)
-                if (searchQuery) {
-                    const matchText = (comp.title + " " + comp.organizer + " " + comp.category + " " + comp.aiSummary).toLowerCase();
-                    if (!matchText.includes(searchQuery)) return false;
-                }
+    /* ============================================================
+       8. DETAIL MODAL / TABS
+       ============================================================ */
+    function openModal(id) {
+        const comp = competitionsData.find(c => c.id === id);
+        if (!comp) return;
+        const daysLeft = getDaysLeft(comp.deadline);
+        document.getElementById('modalCategory').innerText = comp.category;
+        document.getElementById('modalTitle').innerText = comp.title;
+        document.getElementById('modalOrganizer').innerHTML = `<i class="fa-solid fa-building-columns mr-1"></i> 主辦: ${comp.organizer}`;
+        document.getElementById('modalAiSummary').innerText = comp.aiSummary;
+        document.getElementById('modalGrades').innerText = comp.grades.join(', ');
+        document.getElementById('modalFee').innerText = comp.feeText;
+        document.getElementById('modalDeadline').innerText = `${fmtDate(comp.deadline)} (剩餘 ${daysLeft} 天)`;
+        document.getElementById('modalEntryType').innerText = comp.entryType + '賽';
+        document.getElementById('modalSourceLink').href = comp.url;
+        document.getElementById('detailModal').classList.remove('hidden');
+    }
+    function closeModal() { document.getElementById('detailModal').classList.add('hidden'); }
 
-                // Grade filter
-                if (gradeFilter !== 'ALL') {
-                    if (gradeFilter === 'Lower') {
-                        // Must include at least one of P1, P2, P3
-                        const hasLower = comp.grades.some(g => ['P.1', 'P.2', 'P.3'].includes(g));
-                        if (!hasLower) return false;
-                    } else if (gradeFilter === 'Upper') {
-                        // Must include at least one of P.4, P.5, P.6
-                        const hasUpper = comp.grades.some(g => ['P.4', 'P.5', 'P.6'].includes(g));
-                        if (!hasUpper) return false;
-                    } else {
-                        // Specific grade e.g., 'P.5'
-                        if (!comp.grades.includes(gradeFilter)) return false;
-                    }
-                }
-
-                // Fee filter
-                if (feeRadio === 'FREE' && comp.fee > 0) return false;
-                if (feeRadio === 'PAID' && comp.fee === 0) return false;
-
-                // Entry Type filter
-                const isInd = comp.entryType.includes('個人');
-                const isTm = comp.entryType.includes('團體');
-                if (isInd && !entryIndividual && !isTm) return false;
-                if (isTm && !entryTeam && !isInd) return false;
-
-                return true;
-            });
-
-            // Sorting
-            if (sortBy === 'deadline_asc') {
-                results.sort((a, b) => a.daysLeft - b.daysLeft);
-            } else if (sortBy === 'popular') {
-                results.sort((a, b) => b.id - a.id); // Mock popularity
-            } else if (sortBy === 'date_desc') {
-                results.sort((a, b) => b.deadline.localeCompare(a.deadline));
-            }
-
-            // Update Active Filter Badges Display
-            updateActiveBadgesDisplay(gradeFilter, feeRadio, results.length);
-
-            renderCompetitions(results);
-        }
-
-        function updateActiveBadgesDisplay(grade, fee, count) {
-            const container = document.getElementById('activeFilterTags');
-            let feeLabel = fee === 'FREE' ? '全免 $0' : (fee === 'PAID' ? '付費賽事' : '不限費用');
-            let gradeLabel = grade === 'ALL' ? '全學段 P.1-P.6' : (grade === 'Lower' ? '初小 P.1-3' : (grade === 'Upper' ? '高小 P.4-6' : grade));
-
-            container.innerHTML = `
-                <span class="bg-brand-100 text-brand-700 px-3 py-1 rounded-full font-medium flex items-center space-x-1 shrink-0">
-                    <i class="fa-solid fa-filter text-[10px] mr-1"></i>
-                    <span>已選 ${selectedCategories.length === categoriesList.length ? '全部類別' : selectedCategories.join(', ')}</span>
-                </span>
-                <span class="bg-slate-200 text-slate-700 px-3 py-1 rounded-full font-medium shrink-0">${gradeLabel}</span>
-                <span class="bg-slate-200 text-slate-700 px-3 py-1 rounded-full font-medium shrink-0">${feeLabel}</span>
-            `;
-        }
-
-        // Modal Controls
-        function openFilterModal() {
-            document.getElementById('filterModal').classList.remove('hidden');
-        }
-
-        function closeFilterModal() {
-            document.getElementById('filterModal').classList.add('hidden');
-        }
-
-        function applyAdvancedFilters() {
-            // Collect checked categories from modal
-            const checkedCats = [];
-            document.querySelectorAll('input[name="modalCat"]:checked').forEach(cb => {
-                checkedCats.push(cb.value);
-            });
-            if (checkedCats.length > 0) {
-                selectedCategories = checkedCats;
-            }
-
-            closeFilterModal();
-            applyFilters();
-        }
-
-        function resetAdvancedFilters() {
-            document.getElementById('searchInput').value = '';
-            document.getElementById('filterGrade').value = 'ALL';
-            document.querySelector('input[name="feeFilter"][value="ALL"]').checked = true;
-            document.getElementById('entryIndividual').checked = true;
-            document.getElementById('entryTeam').checked = true;
-            document.getElementById('sortBy').value = 'deadline_asc';
-            selectedCategories = [...categoriesList];
-            
-            document.querySelectorAll('input[name="modalCat"]').forEach(cb => cb.checked = true);
-
-            closeFilterModal();
-            quickCategory('全部');
-        }
-
-        function openModal(id) {
-            const comp = competitionsData.find(c => c.id === id);
-            if (!comp) return;
-
-            document.getElementById('modalCategory').innerText = comp.category;
-            document.getElementById('modalTitle').innerText = comp.title;
-            document.getElementById('modalOrganizer').innerHTML = `<i class="fa-solid fa-building-columns mr-1"></i> 主辦: ${comp.organizer}`;
-            document.getElementById('modalAiSummary').innerText = comp.aiSummary;
-            document.getElementById('modalGrades').innerText = comp.grades.join(', ');
-            document.getElementById('modalFee').innerText = comp.feeText;
-            document.getElementById('modalDeadline').innerText = `${comp.deadline} (剩餘 ${comp.daysLeft} 天)`;
-            document.getElementById('modalEntryType').innerText = comp.entryType + "賽";
-            document.getElementById('modalSourceLink').href = comp.url;
-
-            document.getElementById('detailModal').classList.remove('hidden');
-        }
-
-        function closeModal() {
-            document.getElementById('detailModal').classList.add('hidden');
-        }
-
-        // Tab Navigation
-        function switchTab(tab) {
-            ['home', 'browse', 'bookmarks', 'settings'].forEach(t => {
-                const btn = document.getElementById(`nav-${t}`);
-                if (t === tab) {
-                    btn.classList.add('text-brand-600', 'font-semibold');
-                    btn.classList.remove('text-slate-500');
-                } else {
-                    btn.classList.remove('text-brand-600', 'font-semibold');
-                    btn.classList.add('text-slate-500');
-                }
-            });
-
-            if (tab === 'bookmarks') {
-                document.getElementById('feedTitle').innerText = '⭐ 已收藏的比賽';
-                const bookmarked = competitionsData.filter(c => c.isBookmarked);
-                renderCompetitions(bookmarked);
-            } else if (tab === 'browse') {
-                resetAdvancedFilters();
-            } else if (tab === 'settings') {
-                document.getElementById('mainContent').innerHTML = `
-                    <div class="p-4 space-y-4">
-                        <div class="bg-white p-4 rounded-2xl border border-slate-200">
-                            <h3 class="font-bold text-sm text-slate-800 mb-2">👤 用戶身份設定</h3>
-                            <p class="text-xs text-slate-500 mb-3">當前身份：香港小學資深教師 / STEAM主任</p>
-                            <div class="space-y-2 text-xs">
-                                <label class="flex items-center justify-between p-2 bg-slate-50 rounded-xl">
-                                    <span>每日早上 7:00 推送每日新比賽</span>
-                                    <input type="checkbox" checked class="accent-brand-600">
-                                </label>
-                                <label class="flex items-center justify-between p-2 bg-slate-50 rounded-xl">
-                                    <span>截止前 3 天緊急通知</span>
-                                    <input type="checkbox" checked class="accent-brand-600">
-                                </label>
-                            </div>
-                        </div>
-                        <div class="bg-white p-4 rounded-2xl border border-slate-200">
-                            <h3 class="font-bold text-sm text-slate-800 mb-2">🔔 關注科目訂閱</h3>
-                            <div class="flex flex-wrap gap-2 text-xs">
-                                <span class="bg-brand-50 text-brand-600 px-3 py-1 rounded-lg font-semibold">STEAM項目 ✓</span>
-                                <span class="bg-brand-50 text-brand-600 px-3 py-1 rounded-lg font-semibold">中文科 ✓</span>
-                                <span class="bg-brand-50 text-brand-600 px-3 py-1 rounded-lg font-semibold">數學科 ✓</span>
-                            </div>
+    function switchTab(tab) {
+        ['home','browse','bookmarks','settings'].forEach(t => {
+            const btn = document.getElementById(`nav-${t}`);
+            btn.classList.toggle('text-brand-600', t === tab);
+            btn.classList.toggle('font-semibold', t === tab);
+            btn.classList.toggle('text-slate-500', t !== tab);
+        });
+        if (tab === 'bookmarks') {
+            document.getElementById('feedTitle').innerText = '⭐ 已收藏的有效比賽';
+            const saved = competitionsData.filter(c => c.isBookmarked && getDaysLeft(c.deadline) >= 0);
+            document.getElementById('resultCount').innerText = `共 ${saved.length} 項`;
+            renderCompetitions(saved);
+        } else if (tab === 'browse') {
+            resetAdvancedFilters();
+        } else if (tab === 'settings') {
+            document.getElementById('mainContent').innerHTML = `
+                <div class="p-4 space-y-4">
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200">
+                        <h3 class="font-bold text-sm text-slate-800 mb-2">👤 用戶身份</h3>
+                        <p class="text-xs text-slate-500 mb-3">香港小學教師 / STEAM 統籌主任</p>
+                        <div class="space-y-2 text-xs">
+                            <label class="flex items-center justify-between p-2 bg-slate-50 rounded-xl"><span>每日 07:00 推送新比賽</span><input type="checkbox" checked class="accent-brand-600"></label>
+                            <label class="flex items-center justify-between p-2 bg-slate-50 rounded-xl"><span>自動隱藏已截止比賽</span><input type="checkbox" checked class="accent-brand-600"></label>
                         </div>
                     </div>
-                `;
-            } else {
-                location.reload();
-            }
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200">
+                        <h3 class="font-bold text-sm text-slate-800 mb-2">🔔 關注科目</h3>
+                        <div class="flex flex-wrap gap-2 text-xs">
+                            <span class="bg-brand-50 text-brand-600 px-3 py-1 rounded-lg font-semibold">11 大學科全部已啟用 ✓</span>
+                        </div>
+                    </div>
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200">
+                        <h3 class="font-bold text-sm text-slate-800 mb-2">🔍 搜尋能力</h3>
+                        <ul class="text-[11px] text-slate-600 space-y-1">
+                            <li>• 多關鍵字以空格分隔（AND 邏輯）</li>
+                            <li>• 同義詞：STEM / 編程 / AI → STEAM</li>
+                            <li>• 年級：P.5、小五、高小</li>
+                            <li>• 條件：免費、付費、個人、團體</li>
+                        </ul>
+                    </div>
+                </div>`;
+        } else {
+            location.reload();
         }
+    }
 
-        function toggleNotifications() {
-            alert('通知中心：您有 2 項關注的比賽將於 3 天內截止報名！');
-        }
+    function toggleNotifications() {
+        alert('通知中心：目前有 ' + competitionsData.filter(c => getDaysLeft(c.deadline) >= 0 && getDaysLeft(c.deadline) <= 14).length + ' 項比賽將於兩週內截止！');
+    }
 
-        // Initialize App on Load
-        initModalCheckboxes();
-        renderCompetitions(competitionsData);
+    /* ============================================================
+       9. INIT
+       ============================================================ */
+    document.getElementById('dataDate').innerText = `資料更新：${new Date().toLocaleDateString('zh-HK',{year:'numeric',month:'long',day:'numeric'})} • 30 項比賽`;
+    initModalCheckboxes();
+    renderRecent();
+    applyFilters();
     </script>
 </body>
 </html>
